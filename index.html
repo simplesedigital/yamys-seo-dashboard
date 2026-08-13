@@ -1,0 +1,897 @@
+﻿<title>Dashboard Orgânico — Yamys Baby</title>
+<style>
+  @font-face { font-family: 'Report Serif'; src: local('Iowan Old Style'), local('Georgia'); }
+  :root {
+    --bg: #f3f4ef; --surface: #ffffff; --surface-2: #eceee6; --surface-3: #e4e7dd;
+    --ink: #1c231e; --ink-soft: #545c51; --ink-faint: #8a9086; --line: #dcdfd5;
+    --accent: #9a6a2c; --accent-soft: #f1e4cf;
+    --teal: #2f6f62; --teal-soft: #e2ede9;
+    --danger: #a3432c; --danger-soft: #f5e4de;
+    --good: #2f6f45; --good-soft: #e2ede4;
+    --shadow: 0 1px 2px rgba(28,35,30,0.06), 0 6px 20px -8px rgba(28,35,30,0.12);
+  }
+  :root[data-theme="dark"] {
+    --bg: #14170f; --surface: #1b201a; --surface-2: #222720; --surface-3: #2a2f27;
+    --ink: #eaece5; --ink-soft: #adb5a6; --ink-faint: #737d6f; --line: #333a30;
+    --accent: #d9a75c; --accent-soft: #35301f;
+    --teal: #6bae9c; --teal-soft: #1f322c;
+    --danger: #d98269; --danger-soft: #3a241e;
+    --good: #7cbd8e; --good-soft: #1e2f22;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 30px -12px rgba(0,0,0,0.55);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14170f; --surface: #1b201a; --surface-2: #222720; --surface-3: #2a2f27;
+      --ink: #eaece5; --ink-soft: #adb5a6; --ink-faint: #737d6f; --line: #333a30;
+      --accent: #d9a75c; --accent-soft: #35301f;
+      --teal: #6bae9c; --teal-soft: #1f322c;
+      --danger: #d98269; --danger-soft: #3a241e;
+      --good: #7cbd8e; --good-soft: #1e2f22;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 10px 30px -12px rgba(0,0,0,0.55);
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:1.5; }
+  .page { max-width: 1180px; margin:0 auto; padding: 28px 24px 80px; }
+  h1,h2,h3 { font-family:'Report Serif', Georgia, serif; font-weight:600; margin:0; text-wrap:balance; }
+  header.top { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; padding-bottom:18px; margin-bottom:22px; border-bottom:1px solid var(--line); }
+  .eyebrow { font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--teal); font-weight:700; margin-bottom:4px; }
+  h1 { font-size: clamp(22px,3vw,28px); }
+  .updated-note { font-size:12px; color:var(--ink-faint); }
+
+  .filterbar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:10px 14px; margin-bottom:24px; box-shadow:var(--shadow); }
+  .filterbar label { font-size:12px; color:var(--ink-faint); }
+  .filterbar input[type=date] { font:inherit; font-size:13px; padding:5px 8px; border:1px solid var(--line); border-radius:6px; background:var(--surface); color:var(--ink); }
+  .filterbar .presets { display:flex; gap:6px; margin-left:auto; }
+  .btn-chip { font:inherit; font-size:12px; padding:5px 10px; border-radius:999px; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); cursor:pointer; }
+  .btn-chip:hover { border-color: var(--teal); color:var(--teal); }
+  .btn-chip.active { background:var(--teal); border-color:var(--teal); color:#fff; }
+
+  section { margin-bottom: 34px; }
+  .section-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap; }
+  .section-head h2 { font-size:19px; }
+  .section-note { font-size:12px; color:var(--ink-faint); }
+
+  .kpi-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; }
+  .kpi { background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 16px; box-shadow:var(--shadow); }
+  .kpi .label { font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint); margin-bottom:6px; }
+  .kpi .value { font-family:'Report Serif',Georgia,serif; font-size:21px; font-variant-numeric:tabular-nums; }
+  .kpi .delta { font-size:11.5px; margin-top:4px; font-variant-numeric:tabular-nums; }
+  .delta.pos { color:var(--good); } .delta.neg { color:var(--danger); } .delta.flat { color:var(--ink-faint); }
+
+  .goal-card { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px 22px; box-shadow:var(--shadow); display:grid; grid-template-columns: 1.1fr 1fr; gap:24px; }
+  @media (max-width:820px){ .goal-card{ grid-template-columns:1fr; } .kpi-grid{ grid-template-columns:repeat(2,1fr);} }
+  .goal-left h3 { font-size:15px; color:var(--ink-faint); font-weight:600; margin-bottom:10px; text-transform:uppercase; letter-spacing:.04em; }
+  .goal-numbers { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .goal-numbers .big { font-family:'Report Serif',Georgia,serif; font-size:30px; font-variant-numeric:tabular-nums; }
+  .goal-numbers .of { color:var(--ink-faint); font-size:15px; }
+  .progress-track { height:10px; border-radius:999px; background:var(--surface-3); overflow:hidden; margin-bottom:8px; }
+  .progress-fill { height:100%; background:var(--teal); border-radius:999px 0 0 999px; }
+  .progress-fill.behind { background: var(--danger); }
+  .pace-row { display:flex; justify-content:space-between; font-size:12.5px; color:var(--ink-soft); }
+  .goal-right { border-left:1px solid var(--line); padding-left:24px; display:flex; flex-direction:column; justify-content:center; gap:10px; }
+  @media (max-width:820px){ .goal-right{ border-left:none; border-top:1px solid var(--line); padding-left:0; padding-top:16px; } }
+  .goal-stat { display:flex; justify-content:space-between; font-size:13px; }
+  .goal-stat b { font-variant-numeric:tabular-nums; }
+  .goal-verdict { font-size:12.5px; padding:10px 12px; border-radius:8px; background:var(--danger-soft); color:var(--danger); margin-top:4px; }
+
+  .chart-card { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:18px 18px 12px; box-shadow:var(--shadow); }
+  .chart-controls { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px; }
+  .toggle-group { display:flex; gap:4px; background:var(--surface-2); border-radius:8px; padding:3px; }
+  .toggle-group button { font:inherit; font-size:12px; border:none; background:transparent; color:var(--ink-soft); padding:5px 12px; border-radius:6px; cursor:pointer; }
+  .toggle-group button.active { background:var(--surface); color:var(--ink); box-shadow:var(--shadow); font-weight:600; }
+  .chart-scroll { overflow-x:auto; }
+  svg.chart { display:block; min-width:640px; }
+  .legend { display:flex; gap:16px; flex-wrap:wrap; margin-top:8px; padding-top:10px; border-top:1px solid var(--line); font-size:11.5px; color:var(--ink-soft); }
+  .legend span.sw { display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; vertical-align:middle; }
+  .axis-label { fill:var(--ink-faint); font-size:9.5px; font-family:-apple-system,sans-serif; }
+  .grid-line { stroke:var(--line); stroke-width:1; }
+  .val-label-bar { fill:var(--teal); font-size:12px; font-weight:700; font-family:-apple-system,sans-serif; font-variant-numeric:tabular-nums; }
+  .val-label-line { fill:var(--accent); font-size:12px; font-weight:700; font-family:-apple-system,sans-serif; font-variant-numeric:tabular-nums; }
+  .val-label-bg { fill:var(--surface); opacity:0.88; }
+
+  .charts-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:900px){ .charts-grid{ grid-template-columns:1fr; } }
+
+  .two-col { display:grid; grid-template-columns:1.3fr 1fr; gap:16px; }
+  @media (max-width:900px){ .two-col{ grid-template-columns:1fr; } }
+
+  .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:10px; background:var(--surface); box-shadow:var(--shadow); }
+  table { border-collapse:collapse; width:100%; font-size:12.5px; min-width:480px; }
+  th,td { text-align:left; padding:8px 12px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-faint); font-weight:600; background:var(--surface-2); position:sticky; top:0; }
+  td { color:var(--ink-soft); font-variant-numeric:tabular-nums; }
+  td.name { color:var(--ink); font-weight:500; white-space:normal; max-width:260px; }
+  tr:last-child td { border-bottom:none; }
+
+  .callout { border-radius:12px; padding:16px 18px; border:1px solid; display:flex; gap:12px; }
+  .callout.warn { background:var(--danger-soft); border-color:color-mix(in srgb, var(--danger) 30%, var(--line)); }
+  .callout.info { background:var(--teal-soft); border-color:color-mix(in srgb, var(--teal) 30%, var(--line)); }
+  .callout .dot { width:8px; height:8px; border-radius:50%; margin-top:6px; flex-shrink:0; }
+  .callout.warn .dot { background:var(--danger); } .callout.info .dot { background:var(--teal); }
+  .callout h3 { font-size:14.5px; margin-bottom:4px; }
+  .callout p { margin:0; font-size:13px; color:var(--ink-soft); }
+
+  .channel-list { display:flex; flex-direction:column; gap:8px; }
+  .channel-row { display:flex; align-items:center; gap:10px; font-size:12.5px; }
+  .channel-row .name { width:90px; color:var(--ink); font-weight:500; }
+  .channel-row .bar-track { flex:1; height:8px; background:var(--surface-3); border-radius:4px; overflow:hidden; }
+  .channel-row .bar-fill { height:100%; background:var(--teal); }
+  .channel-row .val { width:70px; text-align:right; font-variant-numeric:tabular-nums; color:var(--ink-soft); }
+
+  .timeline { position:relative; padding-left:22px; }
+  .timeline::before { content:""; position:absolute; left:5px; top:4px; bottom:4px; width:1px; background:var(--line); }
+  .tl-item { position:relative; padding-bottom:20px; }
+  .tl-item:last-child { padding-bottom:0; }
+  .tl-item::before { content:""; position:absolute; left:-22px; top:4px; width:9px; height:9px; border-radius:50%; background:var(--teal); border:2px solid var(--surface); }
+  .tl-date { font-size:11px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; margin-bottom:2px; }
+  .tl-title { background:none; border:none; padding:0; font:inherit; font-size:14.5px; font-weight:600; color:var(--ink); cursor:pointer; text-align:left; font-family:'Report Serif',Georgia,serif; }
+  .tl-title:hover { color:var(--teal); text-decoration:underline; }
+  .tl-summary { font-size:12.5px; color:var(--ink-soft); margin-top:3px; max-width:640px; }
+  .tl-tag { display:inline-block; font-size:10px; text-transform:uppercase; letter-spacing:.03em; padding:2px 7px; border-radius:999px; margin-top:5px; }
+  .tl-tag.fix { background:var(--good-soft); color:var(--good); }
+  .tl-tag.content { background:var(--accent-soft); color:var(--accent); }
+  .tl-tag.diag { background:var(--danger-soft); color:var(--danger); }
+  .tl-tag.tech { background:var(--teal-soft); color:var(--teal); }
+
+  .modal-overlay { position:fixed; inset:0; background:rgba(20,23,15,0.55); display:none; align-items:flex-start; justify-content:center; padding:40px 20px; z-index:50; overflow-y:auto; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface); border-radius:14px; max-width:640px; width:100%; padding:26px 28px; box-shadow: 0 20px 60px -10px rgba(0,0,0,0.4); }
+  .modal-head { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:6px; }
+  .modal h3 { font-size:19px; }
+  .modal-close { background:var(--surface-2); border:none; width:28px; height:28px; border-radius:50%; color:var(--ink-soft); cursor:pointer; font-size:15px; flex-shrink:0; }
+  .modal-date { font-size:11.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.03em; margin-bottom:16px; }
+  .modal-body { font-size:13.5px; color:var(--ink-soft); }
+  .modal-body p { margin:0 0 10px; }
+  .modal-body strong { color:var(--ink); }
+  .modal-body ul { margin:0 0 10px; padding-left:18px; }
+  .modal-body li { margin-bottom:4px; }
+
+  footer.foot { margin-top:40px; padding-top:16px; border-top:1px solid var(--line); color:var(--ink-faint); font-size:11.5px; }
+
+  .tabnav { display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:26px; }
+  .tabnav button { font:inherit; font-size:13px; font-weight:600; background:none; border:none; padding:10px 4px; margin-right:22px; color:var(--ink-faint); cursor:pointer; border-bottom:2px solid transparent; }
+  .tabnav button.active { color:var(--ink); border-bottom-color:var(--teal); }
+  .tabnav button:hover:not(.active) { color:var(--ink-soft); }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  .pos-pill { display:inline-block; min-width:30px; text-align:center; padding:2px 7px; border-radius:5px; font-weight:600; font-size:12px; }
+  .pos-good { background:var(--good-soft); color:var(--good); }
+  .pos-mid { background:var(--accent-soft); color:var(--accent); }
+  .pos-bad { background:var(--danger-soft); color:var(--danger); }
+
+  .legend-card { background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:16px 18px; box-shadow:var(--shadow); }
+  .legend-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px 28px; font-size:12px; color:var(--ink-soft); }
+  @media (max-width:700px){ .legend-grid{ grid-template-columns:1fr; } }
+  .legend-grid b { color:var(--ink); }
+  .legend-bands { display:flex; gap:14px; margin-top:12px; padding-top:12px; border-top:1px solid var(--line); flex-wrap:wrap; font-size:12px; }
+
+  .status-pill { display:inline-block; padding:2px 9px; border-radius:999px; font-size:11px; font-weight:600; white-space:nowrap; }
+  .status-rank { background:var(--good-soft); color:var(--good); }
+  .status-gap { background:var(--accent-soft); color:var(--accent); }
+  .status-recovering { background:var(--danger-soft); color:var(--danger); }
+  .vol-bar-track { display:inline-block; width:70px; height:6px; background:var(--surface-3); border-radius:3px; vertical-align:middle; margin-right:8px; overflow:hidden; }
+  .vol-bar-fill { display:block; height:100%; background:var(--teal); }
+  .funnel-strip { display:flex; gap:0; border-radius:10px; overflow:hidden; margin-bottom:18px; box-shadow:var(--shadow); }
+  .funnel-step { flex:1; padding:14px 16px; position:relative; }
+  .funnel-step:not(:last-child)::after { content:"→"; position:absolute; right:-2px; top:50%; transform:translateY(-50%); color:var(--ink-faint); font-size:14px; z-index:2; }
+  .funnel-step .fs-n { font-size:10px; text-transform:uppercase; letter-spacing:.05em; opacity:.75; }
+  .funnel-step .fs-t { font-family:'Report Serif',Georgia,serif; font-size:14.5px; margin-top:2px; }
+  .funnel-step .fs-s { font-size:11px; margin-top:2px; opacity:.85; }
+  .funnel-step.f1 { background:var(--accent-soft); color:var(--accent); }
+  .funnel-step.f2 { background:var(--teal-soft); color:var(--teal); }
+  .funnel-step.f3 { background:var(--good-soft); color:var(--good); }
+</style>
+
+<div class="page">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Yamys Baby · Canal Orgânico (SEO)</div>
+      <h1>Dashboard de Acompanhamento Orgânico</h1>
+    </div>
+    <div class="updated-note">Snapshot atualizado em 13/08/2026 (dados até 12/08) · peça a atualização quando quiser</div>
+  </header>
+
+  <nav class="tabnav">
+    <button class="active" data-tab="overview">Visão Geral</button>
+    <button data-tab="terms">Termos &amp; Páginas</button>
+    <button data-tab="opportunities">Oportunidades de Palavra-chave</button>
+    <button data-tab="history">Histórico de Revisões</button>
+  </nav>
+
+  <div class="tab-panel active" data-panel="overview">
+
+  <div class="filterbar">
+    <label for="dateFrom">De</label>
+    <input type="date" id="dateFrom">
+    <label for="dateTo">até</label>
+    <input type="date" id="dateTo">
+    <div class="presets">
+      <button class="btn-chip" data-range="30">30 dias</button>
+      <button class="btn-chip" data-range="90">90 dias</button>
+      <button class="btn-chip" data-range="180">6 meses</button>
+      <button class="btn-chip active" data-range="all">Tudo</button>
+    </div>
+  </div>
+  <div class="section-note" style="margin:-14px 0 20px;">↑ Filtra os KPIs e os 2 gráficos desta aba. As outras abas mostram períodos fixos (indicados em cada seção) e não respondem a este filtro.</div>
+
+  <section id="kpiSection">
+    <div class="section-head">
+      <h2>Principais KPIs</h2>
+      <span class="section-note">GA4 (sessão com medium contendo "organic") + Search Console · período filtrado vs. período anterior equivalente</span>
+    </div>
+    <div class="kpi-grid" id="kpiGrid"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Meta de Agosto/26</h2>
+      <span class="section-note">Receita orgânica (GA4) · sempre o mês completo — não responde ao filtro de data acima</span>
+    </div>
+    <div class="goal-card" id="goalCard"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Receita e sessões orgânicas</h2>
+    </div>
+    <div class="chart-card">
+      <div class="chart-controls">
+        <div class="legend" style="border:none;padding:0;margin:0;">
+          <span><span class="sw" style="background:var(--teal)"></span>Receita (R$)</span>
+          <span><span class="sw" style="background:var(--accent)"></span>Sessões</span>
+        </div>
+        <div class="toggle-group" data-chart="revSessions">
+          <button data-gran="D">Dia</button>
+          <button data-gran="W">Semana</button>
+          <button data-gran="M" class="active">Mês</button>
+        </div>
+      </div>
+      <div class="chart-scroll"><svg class="chart" id="chartRevSessions" viewBox="0 0 1120 300"></svg></div>
+      <div class="section-note" style="margin-top:6px;">Mostra os últimos 30 pontos do período filtrado (mais antigos são descartados pra manter os rótulos legíveis)</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Desempenho de busca (Search Console)</h2>
+    </div>
+    <div class="chart-card">
+      <div class="chart-controls">
+        <div class="legend" style="border:none;padding:0;margin:0;">
+          <span><span class="sw" style="background:var(--teal)"></span>Cliques</span>
+          <span><span class="sw" style="background:var(--accent)"></span>Posição média (invertida — pra cima é melhor)</span>
+        </div>
+        <div class="toggle-group" data-chart="gsc">
+          <button data-gran="D">Dia</button>
+          <button data-gran="W">Semana</button>
+          <button data-gran="M" class="active">Mês</button>
+        </div>
+      </div>
+      <div class="chart-scroll"><svg class="chart" id="chartGsc" viewBox="0 0 1120 300"></svg></div>
+      <div class="section-note" style="margin-top:6px;">Mostra os últimos 30 pontos do período filtrado (mais antigos são descartados pra manter os rótulos legíveis)</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Diagnóstico ativo</h2></div>
+    <div class="callout warn">
+      <div class="dot"></div>
+      <div>
+        <h3>Colapso do cluster "lancheira térmica" — causa raiz identificada</h3>
+        <p>Perda de autoridade de domínio em março/26 (rank 149→7, ~110 backlinks perdidos numa semana, ligados a spam/PBN) derrubou os termos genéricos competitivos. Termos de marca não foram afetados. Disavow enviado; recuperação de ranking é o item de maior potencial de receita ainda em aberto. Ver linha do tempo abaixo.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Oportunidade de palavra-chave</h2></div>
+    <div class="callout info">
+      <div class="dot"></div>
+      <div>
+        <h3>"bolsa maternidade" — 49.500 buscas/mês, quase 3× "mochila maternidade" (18.100)</h3>
+        <p>Maior lacuna de conteúdo encontrada: nenhuma página tratava desse termo até 11/08/26. Texto de SEO criado para <code>bolsao-yamys</code> nessa data — acompanhar posição e cliques dessa página nas próximas semanas.</p>
+      </div>
+    </div>
+  </section>
+
+  </div><!-- /panel overview -->
+
+  <div class="tab-panel" data-panel="terms">
+
+  <section>
+    <div class="section-head">
+      <h2>Top páginas e termos de busca</h2>
+      <span class="section-note">Search Console · últimos 28 dias · posição colorida por faixa de qualidade</span>
+    </div>
+    <div class="two-col">
+      <div class="table-wrap">
+        <table id="tblPages">
+          <thead><tr><th>Página</th><th>Cliques</th><th>Impr.</th><th>CTR</th><th>Posição</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <table id="tblQueries">
+          <thead><tr><th>Termo</th><th>Cliques</th><th>Impr.</th><th>Posição</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Origem do tráfego orgânico</h2>
+      <span class="section-note">GA4 · Jan–Ago/26 · sessões por buscador</span>
+    </div>
+    <div class="chart-card">
+      <div class="channel-list" id="channelList"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head"><h2>Glossário</h2></div>
+    <div class="legend-card">
+      <div class="legend-grid">
+        <div><b>Sessão orgânica</b> — visita ao site cuja mídia (GA4) contém "organic": busca no Google, Bing, Pinterest etc, sem ser tráfego pago.</div>
+        <div><b>CTR</b> — taxa de cliques: cliques ÷ impressões no Google. Mede quão atrativo é o title/meta pra quem já viu o resultado.</div>
+        <div><b>Impressões</b> — quantas vezes uma página apareceu nos resultados de busca, mesmo sem clique.</div>
+        <div><b>Posição média</b> — posição média do site nos resultados do Google pra um termo/página, ponderada por impressão.</div>
+        <div><b>Ritmo (pace)</b> — receita orgânica média por dia no mês corrente, usada pra projetar se a meta será batida.</div>
+        <div><b>Tag Pai / parent_id</b> — campo técnico da VNDA que associa o title/meta de uma categoria à URL correta no menu do site.</div>
+      </div>
+      <div class="legend-bands">
+        <span><span class="pos-pill pos-good">1–3</span> excelente — topo da página 1</span>
+        <span><span class="pos-pill pos-mid">4–10</span> página 1 — dá pra melhorar</span>
+        <span><span class="pos-pill pos-bad">11+</span> página 2 ou pior — baixa visibilidade</span>
+      </div>
+    </div>
+  </section>
+
+  </div><!-- /panel terms -->
+
+  <div class="tab-panel" data-panel="opportunities">
+
+  <section>
+    <div class="section-head"><h2>As 3 camadas do SEO</h2></div>
+    <div class="funnel-strip">
+      <div class="funnel-step f1"><div class="fs-n">Camada 3 · Descoberta</div><div class="fs-t">DataForSEO</div><div class="fs-s">Que palavras-chave vale a pena perseguir?</div></div>
+      <div class="funnel-step f2"><div class="fs-n">Camada 2 · Ranqueamento</div><div class="fs-t">Search Console</div><div class="fs-s">Estamos bem posicionados pra elas?</div></div>
+      <div class="funnel-step f3"><div class="fs-n">Camada 1 · Conversão</div><div class="fs-t">GA4</div><div class="fs-s">O acesso está virando venda?</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Oportunidades de palavra-chave</h2>
+      <span class="section-note">DataForSEO · palavras relacionadas aos 5 principais produtos · Brasil · termos de marca de terceiros e subcategorias não vendidas já excluídos</span>
+    </div>
+    <div class="table-wrap">
+      <table id="tblOpportunities">
+        <thead><tr><th>Termo</th><th>Volume/mês</th><th>Concorrência</th><th>Status</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="legend-bands" style="margin-top:12px;">
+      <span><span class="status-pill status-rank">Rankeando</span> já temos posição no Search Console</span>
+      <span><span class="status-pill status-recovering">Recuperando</span> rankeava, caiu, disavow + correções em andamento</span>
+      <span><span class="status-pill status-gap">Oportunidade</span> volume relevante, sem conteúdo dedicado ainda</span>
+    </div>
+  </section>
+
+  </div><!-- /panel opportunities -->
+
+  <div class="tab-panel" data-panel="history">
+
+  <section>
+    <div class="section-head">
+      <h2>Histórico de revisões</h2>
+      <span class="section-note">Clique no título pra abrir os detalhes</span>
+    </div>
+    <div class="chart-card">
+      <div class="timeline" id="timeline"></div>
+    </div>
+  </section>
+
+  </div><!-- /panel history -->
+
+  <footer class="foot">
+    Fonte: Google Analytics 4 (propriedade 482634584, medium contém "organic") e Google Search Console (sc-domain:yamysbaby.com). Snapshot em 13/08/2026 (dados até 12/08) — peça atualização a qualquer momento.
+  </footer>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle"></h3>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-date" id="modalDate"></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+const ga4Daily = [{"date":"2025-03-18","sessions":1,"revenue":0,"transactions":0},{"date":"2025-03-19","sessions":36,"revenue":924.83,"transactions":3},{"date":"2025-03-20","sessions":28,"revenue":274.82,"transactions":1},{"date":"2025-03-21","sessions":36,"revenue":0,"transactions":0},{"date":"2025-03-22","sessions":19,"revenue":605.15,"transactions":1},{"date":"2025-03-23","sessions":31,"revenue":0,"transactions":0},{"date":"2025-03-24","sessions":41,"revenue":0,"transactions":0},{"date":"2025-03-25","sessions":57,"revenue":1668.08,"transactions":3},{"date":"2025-03-26","sessions":33,"revenue":0,"transactions":0},{"date":"2025-03-27","sessions":34,"revenue":649,"transactions":1},{"date":"2025-03-28","sessions":28,"revenue":309.62,"transactions":1},{"date":"2025-03-29","sessions":30,"revenue":0,"transactions":0},{"date":"2025-03-30","sessions":20,"revenue":0,"transactions":0},{"date":"2025-03-31","sessions":27,"revenue":951.41,"transactions":2},{"date":"2025-04-01","sessions":26,"revenue":0,"transactions":0},{"date":"2025-04-02","sessions":23,"revenue":0,"transactions":0},{"date":"2025-04-03","sessions":26,"revenue":569,"transactions":1},{"date":"2025-04-04","sessions":29,"revenue":649,"transactions":1},{"date":"2025-04-05","sessions":24,"revenue":0,"transactions":0},{"date":"2025-04-06","sessions":25,"revenue":0,"transactions":0},{"date":"2025-04-07","sessions":32,"revenue":117.29,"transactions":1},{"date":"2025-04-08","sessions":21,"revenue":0,"transactions":0},{"date":"2025-04-09","sessions":21,"revenue":0,"transactions":0},{"date":"2025-04-10","sessions":24,"revenue":0,"transactions":0},{"date":"2025-04-11","sessions":30,"revenue":170.08,"transactions":1},{"date":"2025-04-12","sessions":26,"revenue":75.05,"transactions":1},{"date":"2025-04-13","sessions":30,"revenue":144.91,"transactions":1},{"date":"2025-04-14","sessions":19,"revenue":0,"transactions":0},{"date":"2025-04-15","sessions":31,"revenue":0,"transactions":0},{"date":"2025-04-16","sessions":28,"revenue":1012.54,"transactions":2},{"date":"2025-04-17","sessions":21,"revenue":305.13,"transactions":1},{"date":"2025-04-18","sessions":15,"revenue":0,"transactions":0},{"date":"2025-04-19","sessions":16,"revenue":1674.16,"transactions":3},{"date":"2025-04-20","sessions":32,"revenue":436.68,"transactions":2},{"date":"2025-04-21","sessions":25,"revenue":584.1,"transactions":1},{"date":"2025-04-22","sessions":31,"revenue":0,"transactions":0},{"date":"2025-04-23","sessions":22,"revenue":613.21,"transactions":2},{"date":"2025-04-24","sessions":33,"revenue":1583.72,"transactions":2},{"date":"2025-04-25","sessions":29,"revenue":0,"transactions":0},{"date":"2025-04-26","sessions":18,"revenue":0,"transactions":0},{"date":"2025-04-27","sessions":28,"revenue":0,"transactions":0},{"date":"2025-04-28","sessions":27,"revenue":0,"transactions":0},{"date":"2025-04-29","sessions":39,"revenue":616.55,"transactions":1},{"date":"2025-04-30","sessions":41,"revenue":1083.87,"transactions":3},{"date":"2025-05-01","sessions":27,"revenue":970.05,"transactions":1},{"date":"2025-05-02","sessions":40,"revenue":0,"transactions":0},{"date":"2025-05-03","sessions":36,"revenue":0,"transactions":0},{"date":"2025-05-04","sessions":46,"revenue":0,"transactions":0},{"date":"2025-05-05","sessions":33,"revenue":1500.06,"transactions":4},{"date":"2025-05-06","sessions":29,"revenue":810.29,"transactions":2},{"date":"2025-05-07","sessions":25,"revenue":746.09,"transactions":2},{"date":"2025-05-08","sessions":26,"revenue":289.4,"transactions":1},{"date":"2025-05-09","sessions":23,"revenue":918,"transactions":1},{"date":"2025-05-10","sessions":22,"revenue":358.25,"transactions":1},{"date":"2025-05-11","sessions":25,"revenue":1584.65,"transactions":3},{"date":"2025-05-12","sessions":32,"revenue":2243.48,"transactions":4},{"date":"2025-05-13","sessions":46,"revenue":616.55,"transactions":1},{"date":"2025-05-14","sessions":38,"revenue":977.99,"transactions":2},{"date":"2025-05-15","sessions":23,"revenue":0,"transactions":0},{"date":"2025-05-16","sessions":22,"revenue":649,"transactions":1},{"date":"2025-05-17","sessions":13,"revenue":320.18,"transactions":1},{"date":"2025-05-18","sessions":21,"revenue":0,"transactions":0},{"date":"2025-05-19","sessions":36,"revenue":569,"transactions":1},{"date":"2025-05-20","sessions":33,"revenue":2262.33,"transactions":3},{"date":"2025-05-21","sessions":32,"revenue":880.09,"transactions":2},{"date":"2025-05-22","sessions":29,"revenue":599,"transactions":1},{"date":"2025-05-23","sessions":25,"revenue":0,"transactions":0},{"date":"2025-05-24","sessions":21,"revenue":1545.2,"transactions":2},{"date":"2025-05-25","sessions":32,"revenue":0,"transactions":0},{"date":"2025-05-26","sessions":38,"revenue":3422.68,"transactions":5},{"date":"2025-05-27","sessions":42,"revenue":982.21,"transactions":2},{"date":"2025-05-28","sessions":27,"revenue":585.72,"transactions":1},{"date":"2025-05-29","sessions":31,"revenue":0,"transactions":0},{"date":"2025-05-30","sessions":33,"revenue":0,"transactions":0},{"date":"2025-05-31","sessions":36,"revenue":649,"transactions":1},{"date":"2025-06-01","sessions":27,"revenue":0,"transactions":0},{"date":"2025-06-02","sessions":43,"revenue":1233.1,"transactions":2},{"date":"2025-06-03","sessions":59,"revenue":2665.49,"transactions":7},{"date":"2025-06-04","sessions":37,"revenue":1674.7,"transactions":1},{"date":"2025-06-05","sessions":27,"revenue":939.09,"transactions":2},{"date":"2025-06-06","sessions":19,"revenue":343.49,"transactions":1},{"date":"2025-06-07","sessions":24,"revenue":0,"transactions":0},{"date":"2025-06-08","sessions":35,"revenue":511.76,"transactions":2},{"date":"2025-06-09","sessions":42,"revenue":1536.1,"transactions":4},{"date":"2025-06-10","sessions":19,"revenue":0,"transactions":0},{"date":"2025-06-11","sessions":34,"revenue":616.55,"transactions":1},{"date":"2025-06-12","sessions":45,"revenue":649,"transactions":1},{"date":"2025-06-13","sessions":21,"revenue":718,"transactions":1},{"date":"2025-06-14","sessions":22,"revenue":918,"transactions":1},{"date":"2025-06-15","sessions":22,"revenue":320.85,"transactions":1},{"date":"2025-06-16","sessions":35,"revenue":791.12,"transactions":2},{"date":"2025-06-17","sessions":20,"revenue":394.05,"transactions":1},{"date":"2025-06-18","sessions":21,"revenue":1008.47,"transactions":2},{"date":"2025-06-19","sessions":18,"revenue":663.1,"transactions":1},{"date":"2025-06-20","sessions":13,"revenue":0,"transactions":0},{"date":"2025-06-21","sessions":21,"revenue":0,"transactions":0},{"date":"2025-06-22","sessions":22,"revenue":805.6,"transactions":1},{"date":"2025-06-23","sessions":31,"revenue":1295.54,"transactions":2},{"date":"2025-06-24","sessions":37,"revenue":276.65,"transactions":1},{"date":"2025-06-25","sessions":26,"revenue":0,"transactions":0},{"date":"2025-06-26","sessions":34,"revenue":0,"transactions":0},{"date":"2025-06-27","sessions":34,"revenue":1900,"transactions":1},{"date":"2025-06-28","sessions":27,"revenue":351.62,"transactions":1},{"date":"2025-06-29","sessions":34,"revenue":2688.67,"transactions":2},{"date":"2025-06-30","sessions":57,"revenue":0,"transactions":0},{"date":"2025-07-01","sessions":38,"revenue":568.74,"transactions":1},{"date":"2025-07-02","sessions":30,"revenue":599,"transactions":1},{"date":"2025-07-03","sessions":30,"revenue":461.75,"transactions":1},{"date":"2025-07-04","sessions":33,"revenue":0,"transactions":0},{"date":"2025-07-05","sessions":11,"revenue":0,"transactions":0},{"date":"2025-07-06","sessions":30,"revenue":0,"transactions":0},{"date":"2025-07-07","sessions":32,"revenue":1836,"transactions":2},{"date":"2025-07-08","sessions":32,"revenue":1501.6,"transactions":2},{"date":"2025-07-09","sessions":28,"revenue":1949.69,"transactions":3},{"date":"2025-07-10","sessions":26,"revenue":297.13,"transactions":1},{"date":"2025-07-11","sessions":29,"revenue":214.88,"transactions":2},{"date":"2025-07-12","sessions":19,"revenue":447.99,"transactions":1},{"date":"2025-07-13","sessions":27,"revenue":0,"transactions":0},{"date":"2025-07-14","sessions":21,"revenue":649,"transactions":1},{"date":"2025-07-15","sessions":25,"revenue":0,"transactions":0},{"date":"2025-07-16","sessions":31,"revenue":649,"transactions":1},{"date":"2025-07-17","sessions":26,"revenue":914.1,"transactions":2},{"date":"2025-07-18","sessions":21,"revenue":0,"transactions":0},{"date":"2025-07-19","sessions":28,"revenue":691.65,"transactions":1},{"date":"2025-07-20","sessions":28,"revenue":363.8,"transactions":1},{"date":"2025-07-21","sessions":30,"revenue":188.99,"transactions":1},{"date":"2025-07-22","sessions":21,"revenue":0,"transactions":0},{"date":"2025-07-23","sessions":30,"revenue":0,"transactions":0},{"date":"2025-07-24","sessions":32,"revenue":691.65,"transactions":1},{"date":"2025-07-25","sessions":41,"revenue":759.05,"transactions":1},{"date":"2025-07-26","sessions":46,"revenue":0,"transactions":0},{"date":"2025-07-27","sessions":34,"revenue":0,"transactions":0},{"date":"2025-07-28","sessions":51,"revenue":1618.17,"transactions":2},{"date":"2025-07-29","sessions":28,"revenue":0,"transactions":0},{"date":"2025-07-30","sessions":34,"revenue":3596.85,"transactions":2},{"date":"2025-07-31","sessions":28,"revenue":0,"transactions":0},{"date":"2025-08-01","sessions":36,"revenue":906.42,"transactions":2},{"date":"2025-08-02","sessions":31,"revenue":320.18,"transactions":1},{"date":"2025-08-03","sessions":40,"revenue":390,"transactions":1},{"date":"2025-08-04","sessions":36,"revenue":310.18,"transactions":1},{"date":"2025-08-05","sessions":31,"revenue":691.73,"transactions":2},{"date":"2025-08-06","sessions":40,"revenue":1478.57,"transactions":4},{"date":"2025-08-07","sessions":32,"revenue":474.05,"transactions":1},{"date":"2025-08-08","sessions":29,"revenue":340,"transactions":1},{"date":"2025-08-09","sessions":24,"revenue":1150.06,"transactions":2},{"date":"2025-08-10","sessions":22,"revenue":0,"transactions":0},{"date":"2025-08-11","sessions":43,"revenue":0,"transactions":0},{"date":"2025-08-12","sessions":38,"revenue":811.3,"transactions":1},{"date":"2025-08-13","sessions":62,"revenue":633.06,"transactions":2},{"date":"2025-08-14","sessions":39,"revenue":754.3,"transactions":1},{"date":"2025-08-15","sessions":30,"revenue":1289.23,"transactions":2},{"date":"2025-08-16","sessions":27,"revenue":951.36,"transactions":1},{"date":"2025-08-17","sessions":38,"revenue":0,"transactions":0},{"date":"2025-08-18","sessions":30,"revenue":0,"transactions":0},{"date":"2025-08-19","sessions":45,"revenue":296.73,"transactions":1},{"date":"2025-08-20","sessions":28,"revenue":0,"transactions":0},{"date":"2025-08-21","sessions":44,"revenue":674.93,"transactions":1},{"date":"2025-08-22","sessions":40,"revenue":660.25,"transactions":1},{"date":"2025-08-23","sessions":41,"revenue":705.56,"transactions":2},{"date":"2025-08-24","sessions":39,"revenue":2327.71,"transactions":2},{"date":"2025-08-25","sessions":42,"revenue":528,"transactions":1},{"date":"2025-08-26","sessions":44,"revenue":362.09,"transactions":1},{"date":"2025-08-27","sessions":39,"revenue":674.93,"transactions":1},{"date":"2025-08-28","sessions":39,"revenue":0,"transactions":0},{"date":"2025-08-29","sessions":32,"revenue":1635.42,"transactions":3},{"date":"2025-08-30","sessions":66,"revenue":1400.16,"transactions":3},{"date":"2025-08-31","sessions":80,"revenue":1443.85,"transactions":3},{"date":"2025-09-01","sessions":42,"revenue":662.54,"transactions":2},{"date":"2025-09-02","sessions":40,"revenue":0,"transactions":0},{"date":"2025-09-03","sessions":26,"revenue":2476.56,"transactions":4},{"date":"2025-09-04","sessions":31,"revenue":1794.02,"transactions":2},{"date":"2025-09-05","sessions":36,"revenue":0,"transactions":0},{"date":"2025-09-06","sessions":34,"revenue":0,"transactions":0},{"date":"2025-09-07","sessions":26,"revenue":1699.68,"transactions":2},{"date":"2025-09-08","sessions":40,"revenue":509.55,"transactions":1},{"date":"2025-09-09","sessions":39,"revenue":0,"transactions":0},{"date":"2025-09-10","sessions":23,"revenue":369.84,"transactions":1},{"date":"2025-09-11","sessions":24,"revenue":0,"transactions":0},{"date":"2025-09-12","sessions":29,"revenue":0,"transactions":0},{"date":"2025-09-13","sessions":23,"revenue":0,"transactions":0},{"date":"2025-09-14","sessions":37,"revenue":0,"transactions":0},{"date":"2025-09-15","sessions":57,"revenue":2516.76,"transactions":2},{"date":"2025-09-16","sessions":20,"revenue":0,"transactions":0},{"date":"2025-09-17","sessions":39,"revenue":0,"transactions":0},{"date":"2025-09-18","sessions":33,"revenue":2097.68,"transactions":2},{"date":"2025-09-19","sessions":20,"revenue":0,"transactions":0},{"date":"2025-09-20","sessions":28,"revenue":0,"transactions":0},{"date":"2025-09-21","sessions":28,"revenue":660.25,"transactions":1},{"date":"2025-09-22","sessions":28,"revenue":339.04,"transactions":1},{"date":"2025-09-23","sessions":34,"revenue":0,"transactions":0},{"date":"2025-09-24","sessions":26,"revenue":0,"transactions":0},{"date":"2025-09-25","sessions":27,"revenue":2577.29,"transactions":2},{"date":"2025-09-26","sessions":20,"revenue":0,"transactions":0},{"date":"2025-09-27","sessions":17,"revenue":1105.38,"transactions":1},{"date":"2025-09-28","sessions":31,"revenue":449.64,"transactions":1},{"date":"2025-09-29","sessions":24,"revenue":0,"transactions":0},{"date":"2025-09-30","sessions":36,"revenue":335.14,"transactions":1},{"date":"2025-10-01","sessions":55,"revenue":0,"transactions":0},{"date":"2025-10-02","sessions":25,"revenue":1195.99,"transactions":3},{"date":"2025-10-03","sessions":24,"revenue":1101.29,"transactions":2},{"date":"2025-10-04","sessions":22,"revenue":1536.82,"transactions":1},{"date":"2025-10-05","sessions":29,"revenue":660.12,"transactions":1},{"date":"2025-10-06","sessions":28,"revenue":627.24,"transactions":1},{"date":"2025-10-07","sessions":33,"revenue":0,"transactions":0},{"date":"2025-10-08","sessions":35,"revenue":1173,"transactions":1},{"date":"2025-10-09","sessions":32,"revenue":0,"transactions":0},{"date":"2025-10-10","sessions":27,"revenue":927.27,"transactions":2},{"date":"2025-10-11","sessions":19,"revenue":0,"transactions":0},{"date":"2025-10-12","sessions":13,"revenue":0,"transactions":0},{"date":"2025-10-13","sessions":28,"revenue":0,"transactions":0},{"date":"2025-10-14","sessions":35,"revenue":300.82,"transactions":1},{"date":"2025-10-15","sessions":25,"revenue":0,"transactions":0},{"date":"2025-10-16","sessions":39,"revenue":1029.86,"transactions":1},{"date":"2025-10-17","sessions":24,"revenue":432.45,"transactions":1},{"date":"2025-10-18","sessions":10,"revenue":0,"transactions":0},{"date":"2025-10-19","sessions":36,"revenue":660.25,"transactions":1},{"date":"2025-10-20","sessions":32,"revenue":0,"transactions":0},{"date":"2025-10-21","sessions":26,"revenue":28.15,"transactions":1},{"date":"2025-10-22","sessions":33,"revenue":206.79,"transactions":1},{"date":"2025-10-23","sessions":23,"revenue":179.88,"transactions":1},{"date":"2025-10-24","sessions":17,"revenue":599,"transactions":1},{"date":"2025-10-25","sessions":21,"revenue":324.05,"transactions":1},{"date":"2025-10-26","sessions":12,"revenue":0,"transactions":0},{"date":"2025-10-27","sessions":31,"revenue":442.09,"transactions":1},{"date":"2025-10-28","sessions":33,"revenue":2181.21,"transactions":1},{"date":"2025-10-29","sessions":33,"revenue":380.54,"transactions":1},{"date":"2025-10-30","sessions":23,"revenue":0,"transactions":0},{"date":"2025-10-31","sessions":36,"revenue":0,"transactions":0},{"date":"2025-11-01","sessions":28,"revenue":479.51,"transactions":1},{"date":"2025-11-02","sessions":44,"revenue":501.6,"transactions":1},{"date":"2025-11-03","sessions":34,"revenue":1554.4,"transactions":3},{"date":"2025-11-04","sessions":25,"revenue":0,"transactions":0},{"date":"2025-11-05","sessions":38,"revenue":0,"transactions":0},{"date":"2025-11-06","sessions":26,"revenue":660.25,"transactions":1},{"date":"2025-11-07","sessions":39,"revenue":0,"transactions":0},{"date":"2025-11-08","sessions":12,"revenue":0,"transactions":0},{"date":"2025-11-09","sessions":20,"revenue":1064.01,"transactions":1},{"date":"2025-11-10","sessions":39,"revenue":0,"transactions":0},{"date":"2025-11-11","sessions":46,"revenue":360.98,"transactions":1},{"date":"2025-11-12","sessions":45,"revenue":808.38,"transactions":1},{"date":"2025-11-13","sessions":37,"revenue":2009.79,"transactions":3},{"date":"2025-11-14","sessions":25,"revenue":948.85,"transactions":2},{"date":"2025-11-15","sessions":32,"revenue":1710,"transactions":1},{"date":"2025-11-16","sessions":29,"revenue":1701,"transactions":2},{"date":"2025-11-17","sessions":45,"revenue":1549.09,"transactions":2},{"date":"2025-11-18","sessions":45,"revenue":334.56,"transactions":1},{"date":"2025-11-19","sessions":19,"revenue":0,"transactions":0},{"date":"2025-11-20","sessions":25,"revenue":0,"transactions":0},{"date":"2025-11-21","sessions":28,"revenue":770.81,"transactions":2},{"date":"2025-11-22","sessions":30,"revenue":0,"transactions":0},{"date":"2025-11-23","sessions":53,"revenue":1783.07,"transactions":4},{"date":"2025-11-24","sessions":60,"revenue":1572.47,"transactions":2},{"date":"2025-11-25","sessions":64,"revenue":287.1,"transactions":1},{"date":"2025-11-26","sessions":125,"revenue":2679.3,"transactions":4},{"date":"2025-11-27","sessions":81,"revenue":0,"transactions":0},{"date":"2025-11-28","sessions":205,"revenue":9330.24,"transactions":15},{"date":"2025-11-29","sessions":88,"revenue":915.6,"transactions":2},{"date":"2025-11-30","sessions":103,"revenue":1728.23,"transactions":3},{"date":"2025-12-01","sessions":81,"revenue":350.51,"transactions":1},{"date":"2025-12-02","sessions":59,"revenue":308.1,"transactions":1},{"date":"2025-12-03","sessions":51,"revenue":2149.02,"transactions":2},{"date":"2025-12-04","sessions":35,"revenue":1113.09,"transactions":2},{"date":"2025-12-05","sessions":41,"revenue":1827.15,"transactions":2},{"date":"2025-12-06","sessions":30,"revenue":0,"transactions":0},{"date":"2025-12-07","sessions":37,"revenue":1090.59,"transactions":3},{"date":"2025-12-08","sessions":68,"revenue":2227.09,"transactions":4},{"date":"2025-12-09","sessions":62,"revenue":485.15,"transactions":1},{"date":"2025-12-10","sessions":46,"revenue":0,"transactions":0},{"date":"2025-12-11","sessions":46,"revenue":1320.5,"transactions":2},{"date":"2025-12-12","sessions":26,"revenue":862.15,"transactions":1},{"date":"2025-12-13","sessions":49,"revenue":340,"transactions":1},{"date":"2025-12-14","sessions":48,"revenue":1100.7,"transactions":3},{"date":"2025-12-15","sessions":58,"revenue":3119.91,"transactions":5},{"date":"2025-12-16","sessions":33,"revenue":0,"transactions":0},{"date":"2025-12-17","sessions":41,"revenue":176.67,"transactions":1},{"date":"2025-12-18","sessions":53,"revenue":0,"transactions":0},{"date":"2025-12-19","sessions":40,"revenue":0,"transactions":0},{"date":"2025-12-20","sessions":36,"revenue":324.05,"transactions":1},{"date":"2025-12-21","sessions":66,"revenue":2549.27,"transactions":3},{"date":"2025-12-22","sessions":51,"revenue":816.64,"transactions":2},{"date":"2025-12-23","sessions":36,"revenue":326.59,"transactions":1},{"date":"2025-12-24","sessions":16,"revenue":0,"transactions":0},{"date":"2025-12-25","sessions":27,"revenue":0,"transactions":0},{"date":"2025-12-26","sessions":41,"revenue":2485.33,"transactions":2},{"date":"2025-12-27","sessions":30,"revenue":0,"transactions":0},{"date":"2025-12-28","sessions":46,"revenue":1111.11,"transactions":2},{"date":"2025-12-29","sessions":67,"revenue":660.25,"transactions":1},{"date":"2025-12-30","sessions":35,"revenue":695,"transactions":1},{"date":"2025-12-31","sessions":34,"revenue":1364.73,"transactions":1},{"date":"2026-01-01","sessions":39,"revenue":0,"transactions":0},{"date":"2026-01-02","sessions":51,"revenue":838.85,"transactions":2},{"date":"2026-01-03","sessions":76,"revenue":0,"transactions":0},{"date":"2026-01-04","sessions":85,"revenue":369.02,"transactions":2},{"date":"2026-01-05","sessions":72,"revenue":0,"transactions":0},{"date":"2026-01-06","sessions":67,"revenue":4483.82,"transactions":6},{"date":"2026-01-07","sessions":93,"revenue":3604.57,"transactions":3},{"date":"2026-01-08","sessions":80,"revenue":1947.74,"transactions":3},{"date":"2026-01-09","sessions":66,"revenue":326.59,"transactions":1},{"date":"2026-01-10","sessions":40,"revenue":1421.73,"transactions":1},{"date":"2026-01-11","sessions":46,"revenue":745.22,"transactions":1},{"date":"2026-01-12","sessions":91,"revenue":361.1,"transactions":1},{"date":"2026-01-13","sessions":61,"revenue":1781.45,"transactions":3},{"date":"2026-01-14","sessions":72,"revenue":319.41,"transactions":1},{"date":"2026-01-15","sessions":77,"revenue":431.99,"transactions":1},{"date":"2026-01-16","sessions":57,"revenue":0,"transactions":0},{"date":"2026-01-17","sessions":60,"revenue":2467.15,"transactions":2},{"date":"2026-01-18","sessions":63,"revenue":0,"transactions":0},{"date":"2026-01-19","sessions":101,"revenue":1748.81,"transactions":3},{"date":"2026-01-20","sessions":74,"revenue":479.95,"transactions":1},{"date":"2026-01-21","sessions":77,"revenue":695,"transactions":1},{"date":"2026-01-22","sessions":94,"revenue":1612.51,"transactions":3},{"date":"2026-01-23","sessions":97,"revenue":887.19,"transactions":2},{"date":"2026-01-24","sessions":76,"revenue":1355.25,"transactions":2},{"date":"2026-01-25","sessions":73,"revenue":627.24,"transactions":1},{"date":"2026-01-26","sessions":95,"revenue":3749.31,"transactions":6},{"date":"2026-01-27","sessions":77,"revenue":338.6,"transactions":1},{"date":"2026-01-28","sessions":123,"revenue":3183.27,"transactions":7},{"date":"2026-01-29","sessions":160,"revenue":2861.74,"transactions":3},{"date":"2026-01-30","sessions":102,"revenue":694.99,"transactions":1},{"date":"2026-01-31","sessions":82,"revenue":2794.76,"transactions":4},{"date":"2026-02-01","sessions":67,"revenue":2048.28,"transactions":4},{"date":"2026-02-02","sessions":78,"revenue":744,"transactions":1},{"date":"2026-02-03","sessions":78,"revenue":798.65,"transactions":2},{"date":"2026-02-04","sessions":83,"revenue":1742.31,"transactions":3},{"date":"2026-02-05","sessions":58,"revenue":1284.61,"transactions":3},{"date":"2026-02-06","sessions":55,"revenue":695,"transactions":1},{"date":"2026-02-07","sessions":85,"revenue":330.94,"transactions":1},{"date":"2026-02-08","sessions":75,"revenue":3442.41,"transactions":4},{"date":"2026-02-09","sessions":75,"revenue":660.25,"transactions":1},{"date":"2026-02-10","sessions":63,"revenue":0,"transactions":0},{"date":"2026-02-11","sessions":66,"revenue":306.06,"transactions":1},{"date":"2026-02-12","sessions":73,"revenue":1047.19,"transactions":2},{"date":"2026-02-13","sessions":47,"revenue":695,"transactions":1},{"date":"2026-02-14","sessions":47,"revenue":0,"transactions":0},{"date":"2026-02-15","sessions":26,"revenue":0,"transactions":0},{"date":"2026-02-16","sessions":67,"revenue":0,"transactions":0},{"date":"2026-02-17","sessions":49,"revenue":3317.61,"transactions":3},{"date":"2026-02-18","sessions":66,"revenue":2718.52,"transactions":4},{"date":"2026-02-19","sessions":76,"revenue":2624.11,"transactions":4},{"date":"2026-02-20","sessions":52,"revenue":2698.25,"transactions":2},{"date":"2026-02-21","sessions":41,"revenue":720.1,"transactions":1},{"date":"2026-02-22","sessions":60,"revenue":1488.47,"transactions":2},{"date":"2026-02-23","sessions":62,"revenue":1275.3,"transactions":3},{"date":"2026-02-24","sessions":97,"revenue":2811.79,"transactions":4},{"date":"2026-02-25","sessions":109,"revenue":1471.55,"transactions":2},{"date":"2026-02-26","sessions":78,"revenue":3102.36,"transactions":4},{"date":"2026-02-27","sessions":66,"revenue":2700.85,"transactions":3},{"date":"2026-02-28","sessions":53,"revenue":649.64,"transactions":1},{"date":"2026-03-01","sessions":58,"revenue":627.86,"transactions":1},{"date":"2026-03-02","sessions":83,"revenue":1437.95,"transactions":2},{"date":"2026-03-03","sessions":70,"revenue":499.9,"transactions":1},{"date":"2026-03-04","sessions":94,"revenue":2057.35,"transactions":4},{"date":"2026-03-05","sessions":69,"revenue":3211.18,"transactions":4},{"date":"2026-03-06","sessions":83,"revenue":848.08,"transactions":2},{"date":"2026-03-07","sessions":62,"revenue":1125.35,"transactions":2},{"date":"2026-03-08","sessions":47,"revenue":1647.6,"transactions":4},{"date":"2026-03-09","sessions":60,"revenue":1645.93,"transactions":2},{"date":"2026-03-10","sessions":59,"revenue":1015.25,"transactions":3},{"date":"2026-03-11","sessions":63,"revenue":599,"transactions":1},{"date":"2026-03-12","sessions":49,"revenue":1298.54,"transactions":2},{"date":"2026-03-13","sessions":58,"revenue":477.95,"transactions":1},{"date":"2026-03-14","sessions":43,"revenue":0,"transactions":0},{"date":"2026-03-15","sessions":57,"revenue":1546.37,"transactions":3},{"date":"2026-03-16","sessions":56,"revenue":2749.78,"transactions":5},{"date":"2026-03-17","sessions":49,"revenue":694.87,"transactions":1},{"date":"2026-03-18","sessions":38,"revenue":0,"transactions":0},{"date":"2026-03-19","sessions":25,"revenue":0,"transactions":0},{"date":"2026-03-20","sessions":48,"revenue":1578.98,"transactions":2},{"date":"2026-03-21","sessions":40,"revenue":320.51,"transactions":1},{"date":"2026-03-22","sessions":49,"revenue":592.59,"transactions":1},{"date":"2026-03-23","sessions":74,"revenue":333.04,"transactions":1},{"date":"2026-03-24","sessions":63,"revenue":1103.27,"transactions":2},{"date":"2026-03-25","sessions":67,"revenue":1026.85,"transactions":2},{"date":"2026-03-26","sessions":65,"revenue":1639.65,"transactions":2},{"date":"2026-03-27","sessions":41,"revenue":0,"transactions":0},{"date":"2026-03-28","sessions":37,"revenue":720.85,"transactions":1},{"date":"2026-03-29","sessions":53,"revenue":499.9,"transactions":1},{"date":"2026-03-30","sessions":137,"revenue":977.01,"transactions":1},{"date":"2026-03-31","sessions":96,"revenue":1643.64,"transactions":4},{"date":"2026-04-01","sessions":62,"revenue":340,"transactions":1},{"date":"2026-04-02","sessions":71,"revenue":3450.96,"transactions":4},{"date":"2026-04-03","sessions":60,"revenue":0,"transactions":0},{"date":"2026-04-04","sessions":50,"revenue":2499.09,"transactions":4},{"date":"2026-04-05","sessions":43,"revenue":0,"transactions":0},{"date":"2026-04-06","sessions":67,"revenue":1197.97,"transactions":2},{"date":"2026-04-07","sessions":73,"revenue":1458.4,"transactions":3},{"date":"2026-04-08","sessions":57,"revenue":976.18,"transactions":1},{"date":"2026-04-09","sessions":57,"revenue":0,"transactions":0},{"date":"2026-04-10","sessions":57,"revenue":2115,"transactions":2},{"date":"2026-04-11","sessions":54,"revenue":724.99,"transactions":1},{"date":"2026-04-12","sessions":44,"revenue":1124.46,"transactions":2},{"date":"2026-04-13","sessions":57,"revenue":0,"transactions":0},{"date":"2026-04-14","sessions":62,"revenue":0,"transactions":0},{"date":"2026-04-15","sessions":47,"revenue":477.82,"transactions":2},{"date":"2026-04-16","sessions":44,"revenue":1427.18,"transactions":3},{"date":"2026-04-17","sessions":38,"revenue":0,"transactions":0},{"date":"2026-04-18","sessions":66,"revenue":855.57,"transactions":2},{"date":"2026-04-19","sessions":46,"revenue":1018.22,"transactions":1},{"date":"2026-04-20","sessions":62,"revenue":930.74,"transactions":2},{"date":"2026-04-21","sessions":41,"revenue":697.94,"transactions":1},{"date":"2026-04-22","sessions":75,"revenue":1926.69,"transactions":4},{"date":"2026-04-23","sessions":47,"revenue":932.14,"transactions":2},{"date":"2026-04-24","sessions":35,"revenue":0,"transactions":0},{"date":"2026-04-25","sessions":41,"revenue":3240.21,"transactions":1},{"date":"2026-04-26","sessions":52,"revenue":857.69,"transactions":2},{"date":"2026-04-27","sessions":48,"revenue":0,"transactions":0},{"date":"2026-04-28","sessions":46,"revenue":604.55,"transactions":1},{"date":"2026-04-29","sessions":40,"revenue":525.95,"transactions":1},{"date":"2026-04-30","sessions":42,"revenue":0,"transactions":0},{"date":"2026-05-01","sessions":37,"revenue":2510.29,"transactions":2},{"date":"2026-05-02","sessions":47,"revenue":774.17,"transactions":1},{"date":"2026-05-03","sessions":46,"revenue":0,"transactions":0},{"date":"2026-05-04","sessions":68,"revenue":2476.9,"transactions":4},{"date":"2026-05-05","sessions":51,"revenue":2913.92,"transactions":3},{"date":"2026-05-06","sessions":41,"revenue":1052.83,"transactions":2},{"date":"2026-05-07","sessions":42,"revenue":140.95,"transactions":1},{"date":"2026-05-08","sessions":53,"revenue":1708,"transactions":2},{"date":"2026-05-09","sessions":40,"revenue":861.94,"transactions":1},{"date":"2026-05-10","sessions":34,"revenue":0,"transactions":0},{"date":"2026-05-11","sessions":50,"revenue":1722.01,"transactions":2},{"date":"2026-05-12","sessions":44,"revenue":997.15,"transactions":2},{"date":"2026-05-13","sessions":44,"revenue":2552.8,"transactions":3},{"date":"2026-05-14","sessions":53,"revenue":1072.14,"transactions":2},{"date":"2026-05-15","sessions":45,"revenue":1956.05,"transactions":2},{"date":"2026-05-16","sessions":35,"revenue":1757.4,"transactions":3},{"date":"2026-05-17","sessions":46,"revenue":1042.85,"transactions":2},{"date":"2026-05-18","sessions":50,"revenue":0,"transactions":0},{"date":"2026-05-19","sessions":42,"revenue":476.65,"transactions":1},{"date":"2026-05-20","sessions":39,"revenue":181.64,"transactions":1},{"date":"2026-05-21","sessions":42,"revenue":685.15,"transactions":1},{"date":"2026-05-22","sessions":39,"revenue":0,"transactions":0},{"date":"2026-05-23","sessions":29,"revenue":1453,"transactions":1},{"date":"2026-05-24","sessions":36,"revenue":888,"transactions":1},{"date":"2026-05-25","sessions":54,"revenue":632.42,"transactions":2},{"date":"2026-05-26","sessions":50,"revenue":914.89,"transactions":2},{"date":"2026-05-27","sessions":43,"revenue":660.25,"transactions":1},{"date":"2026-05-28","sessions":34,"revenue":1699.06,"transactions":2},{"date":"2026-05-29","sessions":33,"revenue":1805,"transactions":1},{"date":"2026-05-30","sessions":38,"revenue":2346.95,"transactions":3},{"date":"2026-05-31","sessions":26,"revenue":0,"transactions":0},{"date":"2026-06-01","sessions":41,"revenue":1801.22,"transactions":2},{"date":"2026-06-02","sessions":40,"revenue":1821.14,"transactions":3},{"date":"2026-06-03","sessions":31,"revenue":754,"transactions":1},{"date":"2026-06-04","sessions":31,"revenue":0,"transactions":0},{"date":"2026-06-05","sessions":22,"revenue":0,"transactions":0},{"date":"2026-06-06","sessions":27,"revenue":0,"transactions":0},{"date":"2026-06-07","sessions":30,"revenue":0,"transactions":0},{"date":"2026-06-08","sessions":38,"revenue":2142.17,"transactions":2},{"date":"2026-06-09","sessions":37,"revenue":0,"transactions":0},{"date":"2026-06-10","sessions":28,"revenue":1893.59,"transactions":2},{"date":"2026-06-11","sessions":29,"revenue":324.81,"transactions":1},{"date":"2026-06-12","sessions":23,"revenue":0,"transactions":0},{"date":"2026-06-13","sessions":19,"revenue":0,"transactions":0},{"date":"2026-06-14","sessions":21,"revenue":1390,"transactions":2},{"date":"2026-06-15","sessions":38,"revenue":338.37,"transactions":1},{"date":"2026-06-16","sessions":46,"revenue":0,"transactions":0},{"date":"2026-06-17","sessions":40,"revenue":3770.78,"transactions":3},{"date":"2026-06-18","sessions":36,"revenue":586.16,"transactions":1},{"date":"2026-06-19","sessions":28,"revenue":1511.45,"transactions":1},{"date":"2026-06-20","sessions":49,"revenue":0,"transactions":0},{"date":"2026-06-21","sessions":76,"revenue":923.89,"transactions":2},{"date":"2026-06-22","sessions":88,"revenue":2087.39,"transactions":3},{"date":"2026-06-23","sessions":55,"revenue":806.83,"transactions":1},{"date":"2026-06-24","sessions":42,"revenue":0,"transactions":0},{"date":"2026-06-25","sessions":34,"revenue":0,"transactions":0},{"date":"2026-06-26","sessions":40,"revenue":0,"transactions":0},{"date":"2026-06-27","sessions":46,"revenue":762.88,"transactions":1},{"date":"2026-06-28","sessions":53,"revenue":920.1,"transactions":1},{"date":"2026-06-29","sessions":48,"revenue":0,"transactions":0},{"date":"2026-06-30","sessions":42,"revenue":1170.51,"transactions":2},{"date":"2026-07-01","sessions":37,"revenue":845.25,"transactions":2},{"date":"2026-07-02","sessions":36,"revenue":400.27,"transactions":1},{"date":"2026-07-03","sessions":35,"revenue":925.39,"transactions":2},{"date":"2026-07-04","sessions":28,"revenue":660.25,"transactions":1},{"date":"2026-07-05","sessions":24,"revenue":0,"transactions":0},{"date":"2026-07-06","sessions":53,"revenue":635.64,"transactions":2},{"date":"2026-07-07","sessions":38,"revenue":903.26,"transactions":2},{"date":"2026-07-08","sessions":37,"revenue":2515.84,"transactions":5},{"date":"2026-07-09","sessions":26,"revenue":569.05,"transactions":1},{"date":"2026-07-10","sessions":20,"revenue":0,"transactions":0},{"date":"2026-07-11","sessions":25,"revenue":590.95,"transactions":1},{"date":"2026-07-12","sessions":29,"revenue":0,"transactions":0},{"date":"2026-07-13","sessions":29,"revenue":0,"transactions":0},{"date":"2026-07-14","sessions":44,"revenue":400.27,"transactions":1},{"date":"2026-07-15","sessions":25,"revenue":0,"transactions":0},{"date":"2026-07-16","sessions":29,"revenue":0,"transactions":0},{"date":"2026-07-17","sessions":31,"revenue":632.69,"transactions":1},{"date":"2026-07-18","sessions":32,"revenue":1219.95,"transactions":2},{"date":"2026-07-19","sessions":24,"revenue":1217.79,"transactions":3},{"date":"2026-07-20","sessions":30,"revenue":0,"transactions":0},{"date":"2026-07-21","sessions":28,"revenue":0,"transactions":0},{"date":"2026-07-22","sessions":29,"revenue":627.24,"transactions":1},{"date":"2026-07-23","sessions":26,"revenue":1893.02,"transactions":3},{"date":"2026-07-24","sessions":28,"revenue":0,"transactions":0},{"date":"2026-07-25","sessions":21,"revenue":604.96,"transactions":3},{"date":"2026-07-26","sessions":25,"revenue":1578.5,"transactions":2},{"date":"2026-07-27","sessions":66,"revenue":2615.95,"transactions":4},{"date":"2026-07-28","sessions":46,"revenue":474.99,"transactions":1},{"date":"2026-07-29","sessions":37,"revenue":0,"transactions":0},{"date":"2026-07-30","sessions":33,"revenue":0,"transactions":0},{"date":"2026-07-31","sessions":31,"revenue":975.65,"transactions":1},{"date":"2026-08-01","sessions":23,"revenue":1900,"transactions":1},{"date":"2026-08-02","sessions":36,"revenue":488.06,"transactions":1},{"date":"2026-08-03","sessions":39,"revenue":495.17,"transactions":1},{"date":"2026-08-04","sessions":27,"revenue":317.66,"transactions":1},{"date":"2026-08-05","sessions":31,"revenue":1549.83,"transactions":3},{"date":"2026-08-06","sessions":30,"revenue":0,"transactions":0},{"date":"2026-08-07","sessions":28,"revenue":601.26,"transactions":2},{"date":"2026-08-08","sessions":9,"revenue":0,"transactions":0},{"date":"2026-08-09","sessions":31,"revenue":316.91,"transactions":1},{"date":"2026-08-10","sessions":40,"revenue":317.66,"transactions":1},{"date":"2026-08-11","sessions":38,"revenue":1229.3,"transactions":1},{"date":"2026-08-12","sessions":21,"revenue":793.5,"transactions":2}]
+;
+
+const gscDaily = [{"date":"2025-03-31","clicks":13,"impressions":654,"ctr":0.0199,"position":11.2},{"date":"2025-04-01","clicks":16,"impressions":607,"ctr":0.0264,"position":11.6},{"date":"2025-04-02","clicks":15,"impressions":609,"ctr":0.0246,"position":11.8},{"date":"2025-04-03","clicks":14,"impressions":609,"ctr":0.023,"position":11.7},{"date":"2025-04-04","clicks":22,"impressions":653,"ctr":0.0337,"position":11.8},{"date":"2025-04-05","clicks":14,"impressions":589,"ctr":0.0238,"position":11.9},{"date":"2025-04-06","clicks":18,"impressions":699,"ctr":0.0258,"position":13.1},{"date":"2025-04-07","clicks":18,"impressions":710,"ctr":0.0254,"position":10.9},{"date":"2025-04-08","clicks":17,"impressions":702,"ctr":0.0242,"position":10.5},{"date":"2025-04-09","clicks":11,"impressions":664,"ctr":0.0166,"position":12.1},{"date":"2025-04-10","clicks":12,"impressions":743,"ctr":0.0162,"position":12.3},{"date":"2025-04-11","clicks":25,"impressions":665,"ctr":0.0376,"position":11.8},{"date":"2025-04-12","clicks":14,"impressions":672,"ctr":0.0208,"position":12.9},{"date":"2025-04-13","clicks":19,"impressions":685,"ctr":0.0277,"position":12.3},{"date":"2025-04-14","clicks":18,"impressions":689,"ctr":0.0261,"position":11.5},{"date":"2025-04-15","clicks":16,"impressions":626,"ctr":0.0256,"position":11.6},{"date":"2025-04-16","clicks":12,"impressions":684,"ctr":0.0175,"position":10.7},{"date":"2025-04-17","clicks":11,"impressions":622,"ctr":0.0177,"position":10.2},{"date":"2025-04-18","clicks":12,"impressions":645,"ctr":0.0186,"position":12},{"date":"2025-04-19","clicks":11,"impressions":696,"ctr":0.0158,"position":12.5},{"date":"2025-04-20","clicks":19,"impressions":633,"ctr":0.03,"position":13.8},{"date":"2025-04-21","clicks":14,"impressions":610,"ctr":0.023,"position":11.1},{"date":"2025-04-22","clicks":17,"impressions":654,"ctr":0.026,"position":11.5},{"date":"2025-04-23","clicks":12,"impressions":646,"ctr":0.0186,"position":12.4},{"date":"2025-04-24","clicks":24,"impressions":630,"ctr":0.0381,"position":12.6},{"date":"2025-04-25","clicks":20,"impressions":685,"ctr":0.0292,"position":12.4},{"date":"2025-04-26","clicks":13,"impressions":556,"ctr":0.0234,"position":15.2},{"date":"2025-04-27","clicks":21,"impressions":592,"ctr":0.0355,"position":14.4},{"date":"2025-04-28","clicks":23,"impressions":624,"ctr":0.0369,"position":12.5},{"date":"2025-04-29","clicks":28,"impressions":711,"ctr":0.0394,"position":13.2},{"date":"2025-04-30","clicks":18,"impressions":653,"ctr":0.0276,"position":12},{"date":"2025-05-01","clicks":14,"impressions":591,"ctr":0.0237,"position":13.4},{"date":"2025-05-02","clicks":18,"impressions":674,"ctr":0.0267,"position":14.2},{"date":"2025-05-03","clicks":14,"impressions":625,"ctr":0.0224,"position":12.9},{"date":"2025-05-04","clicks":17,"impressions":677,"ctr":0.0251,"position":13},{"date":"2025-05-05","clicks":11,"impressions":794,"ctr":0.0139,"position":12.1},{"date":"2025-05-06","clicks":21,"impressions":716,"ctr":0.0293,"position":10.5},{"date":"2025-05-07","clicks":20,"impressions":658,"ctr":0.0304,"position":11.1},{"date":"2025-05-08","clicks":16,"impressions":719,"ctr":0.0223,"position":11.8},{"date":"2025-05-09","clicks":7,"impressions":660,"ctr":0.0106,"position":11.6},{"date":"2025-05-10","clicks":14,"impressions":595,"ctr":0.0235,"position":12},{"date":"2025-05-11","clicks":11,"impressions":698,"ctr":0.0158,"position":12.7},{"date":"2025-05-12","clicks":16,"impressions":560,"ctr":0.0286,"position":11.6},{"date":"2025-05-13","clicks":21,"impressions":652,"ctr":0.0322,"position":12.5},{"date":"2025-05-14","clicks":17,"impressions":807,"ctr":0.0211,"position":10.8},{"date":"2025-05-15","clicks":14,"impressions":802,"ctr":0.0175,"position":11.9},{"date":"2025-05-16","clicks":16,"impressions":701,"ctr":0.0228,"position":11.3},{"date":"2025-05-17","clicks":9,"impressions":713,"ctr":0.0126,"position":11.6},{"date":"2025-05-18","clicks":16,"impressions":698,"ctr":0.0229,"position":12.4},{"date":"2025-05-19","clicks":15,"impressions":800,"ctr":0.0187,"position":11.2},{"date":"2025-05-20","clicks":18,"impressions":883,"ctr":0.0204,"position":13.3},{"date":"2025-05-21","clicks":13,"impressions":860,"ctr":0.0151,"position":10.8},{"date":"2025-05-22","clicks":8,"impressions":846,"ctr":0.0095,"position":11.1},{"date":"2025-05-23","clicks":23,"impressions":800,"ctr":0.0288,"position":10.3},{"date":"2025-05-24","clicks":11,"impressions":694,"ctr":0.0159,"position":11.1},{"date":"2025-05-25","clicks":17,"impressions":802,"ctr":0.0212,"position":11.2},{"date":"2025-05-26","clicks":21,"impressions":839,"ctr":0.025,"position":10.1},{"date":"2025-05-27","clicks":21,"impressions":879,"ctr":0.0239,"position":10.9},{"date":"2025-05-28","clicks":13,"impressions":717,"ctr":0.0181,"position":12.2},{"date":"2025-05-29","clicks":14,"impressions":788,"ctr":0.0178,"position":15.8},{"date":"2025-05-30","clicks":14,"impressions":674,"ctr":0.0208,"position":13.5},{"date":"2025-05-31","clicks":21,"impressions":623,"ctr":0.0337,"position":11.2},{"date":"2025-06-01","clicks":13,"impressions":694,"ctr":0.0187,"position":13.7},{"date":"2025-06-02","clicks":31,"impressions":781,"ctr":0.0397,"position":11.5},{"date":"2025-06-03","clicks":30,"impressions":797,"ctr":0.0376,"position":11.9},{"date":"2025-06-04","clicks":19,"impressions":817,"ctr":0.0233,"position":12.7},{"date":"2025-06-05","clicks":19,"impressions":799,"ctr":0.0238,"position":14.3},{"date":"2025-06-06","clicks":12,"impressions":713,"ctr":0.0168,"position":15.6},{"date":"2025-06-07","clicks":18,"impressions":695,"ctr":0.0259,"position":14.9},{"date":"2025-06-08","clicks":20,"impressions":773,"ctr":0.0259,"position":13.5},{"date":"2025-06-09","clicks":23,"impressions":817,"ctr":0.0282,"position":12.3},{"date":"2025-06-10","clicks":17,"impressions":894,"ctr":0.019,"position":12.6},{"date":"2025-06-11","clicks":16,"impressions":940,"ctr":0.017,"position":12},{"date":"2025-06-12","clicks":34,"impressions":884,"ctr":0.0385,"position":12.6},{"date":"2025-06-13","clicks":10,"impressions":858,"ctr":0.0117,"position":12.1},{"date":"2025-06-14","clicks":14,"impressions":867,"ctr":0.0161,"position":12.4},{"date":"2025-06-15","clicks":15,"impressions":933,"ctr":0.0161,"position":12.9},{"date":"2025-06-16","clicks":14,"impressions":965,"ctr":0.0145,"position":10.7},{"date":"2025-06-17","clicks":14,"impressions":853,"ctr":0.0164,"position":12.6},{"date":"2025-06-18","clicks":17,"impressions":921,"ctr":0.0185,"position":11.6},{"date":"2025-06-19","clicks":13,"impressions":894,"ctr":0.0145,"position":12.1},{"date":"2025-06-20","clicks":11,"impressions":975,"ctr":0.0113,"position":10.8},{"date":"2025-06-21","clicks":16,"impressions":963,"ctr":0.0166,"position":14.3},{"date":"2025-06-22","clicks":11,"impressions":927,"ctr":0.0119,"position":12.9},{"date":"2025-06-23","clicks":17,"impressions":1064,"ctr":0.016,"position":11.2},{"date":"2025-06-24","clicks":21,"impressions":1008,"ctr":0.0208,"position":10.7},{"date":"2025-06-25","clicks":16,"impressions":881,"ctr":0.0182,"position":12.2},{"date":"2025-06-26","clicks":16,"impressions":977,"ctr":0.0164,"position":12.8},{"date":"2025-06-27","clicks":23,"impressions":715,"ctr":0.0322,"position":14.9},{"date":"2025-06-28","clicks":14,"impressions":723,"ctr":0.0194,"position":15.3},{"date":"2025-06-29","clicks":14,"impressions":786,"ctr":0.0178,"position":16.5},{"date":"2025-06-30","clicks":25,"impressions":784,"ctr":0.0319,"position":12.7},{"date":"2025-07-01","clicks":16,"impressions":776,"ctr":0.0206,"position":11.9},{"date":"2025-07-02","clicks":17,"impressions":867,"ctr":0.0196,"position":11.8},{"date":"2025-07-03","clicks":12,"impressions":882,"ctr":0.0136,"position":12.3},{"date":"2025-07-04","clicks":17,"impressions":1160,"ctr":0.0147,"position":11},{"date":"2025-07-05","clicks":7,"impressions":741,"ctr":0.0094,"position":14},{"date":"2025-07-06","clicks":11,"impressions":762,"ctr":0.0144,"position":14.2},{"date":"2025-07-07","clicks":19,"impressions":823,"ctr":0.0231,"position":11.4},{"date":"2025-07-08","clicks":23,"impressions":849,"ctr":0.0271,"position":11.3},{"date":"2025-07-09","clicks":18,"impressions":932,"ctr":0.0193,"position":11.6},{"date":"2025-07-10","clicks":19,"impressions":863,"ctr":0.022,"position":12.4},{"date":"2025-07-11","clicks":16,"impressions":900,"ctr":0.0178,"position":10.3},{"date":"2025-07-12","clicks":15,"impressions":823,"ctr":0.0182,"position":10.9},{"date":"2025-07-13","clicks":20,"impressions":824,"ctr":0.0243,"position":13.3},{"date":"2025-07-14","clicks":17,"impressions":859,"ctr":0.0198,"position":11},{"date":"2025-07-15","clicks":14,"impressions":852,"ctr":0.0164,"position":12.3},{"date":"2025-07-16","clicks":20,"impressions":908,"ctr":0.022,"position":12},{"date":"2025-07-17","clicks":24,"impressions":947,"ctr":0.0253,"position":10.7},{"date":"2025-07-18","clicks":10,"impressions":835,"ctr":0.012,"position":10.9},{"date":"2025-07-19","clicks":15,"impressions":754,"ctr":0.0199,"position":11.1},{"date":"2025-07-20","clicks":17,"impressions":860,"ctr":0.0198,"position":12.1},{"date":"2025-07-21","clicks":17,"impressions":986,"ctr":0.0172,"position":10.6},{"date":"2025-07-22","clicks":9,"impressions":966,"ctr":0.0093,"position":11.1},{"date":"2025-07-23","clicks":25,"impressions":1039,"ctr":0.0241,"position":11.1},{"date":"2025-07-24","clicks":14,"impressions":868,"ctr":0.0161,"position":10.8},{"date":"2025-07-25","clicks":18,"impressions":986,"ctr":0.0183,"position":15.9},{"date":"2025-07-26","clicks":26,"impressions":838,"ctr":0.031,"position":11.3},{"date":"2025-07-27","clicks":16,"impressions":891,"ctr":0.018,"position":11.8},{"date":"2025-07-28","clicks":25,"impressions":1030,"ctr":0.0243,"position":10.7},{"date":"2025-07-29","clicks":16,"impressions":977,"ctr":0.0164,"position":11.6},{"date":"2025-07-30","clicks":13,"impressions":924,"ctr":0.0141,"position":10.1},{"date":"2025-07-31","clicks":17,"impressions":917,"ctr":0.0185,"position":11},{"date":"2025-08-01","clicks":24,"impressions":959,"ctr":0.025,"position":11.4},{"date":"2025-08-02","clicks":17,"impressions":919,"ctr":0.0185,"position":10.4},{"date":"2025-08-03","clicks":21,"impressions":979,"ctr":0.0215,"position":10.6},{"date":"2025-08-04","clicks":14,"impressions":1077,"ctr":0.013,"position":11.1},{"date":"2025-08-05","clicks":18,"impressions":991,"ctr":0.0182,"position":11.1},{"date":"2025-08-06","clicks":24,"impressions":989,"ctr":0.0243,"position":10.8},{"date":"2025-08-07","clicks":14,"impressions":949,"ctr":0.0148,"position":10.9},{"date":"2025-08-08","clicks":19,"impressions":838,"ctr":0.0227,"position":11.9},{"date":"2025-08-09","clicks":21,"impressions":768,"ctr":0.0273,"position":12.8},{"date":"2025-08-10","clicks":12,"impressions":754,"ctr":0.0159,"position":13.4},{"date":"2025-08-11","clicks":29,"impressions":950,"ctr":0.0305,"position":10.6},{"date":"2025-08-12","clicks":29,"impressions":916,"ctr":0.0317,"position":9.9},{"date":"2025-08-13","clicks":35,"impressions":942,"ctr":0.0372,"position":9.4},{"date":"2025-08-14","clicks":25,"impressions":817,"ctr":0.0306,"position":9.8},{"date":"2025-08-15","clicks":15,"impressions":816,"ctr":0.0184,"position":9.9},{"date":"2025-08-16","clicks":23,"impressions":737,"ctr":0.0312,"position":10},{"date":"2025-08-17","clicks":23,"impressions":743,"ctr":0.031,"position":9.1},{"date":"2025-08-18","clicks":19,"impressions":729,"ctr":0.0261,"position":9.5},{"date":"2025-08-19","clicks":31,"impressions":853,"ctr":0.0363,"position":10.7},{"date":"2025-08-20","clicks":21,"impressions":806,"ctr":0.0261,"position":10},{"date":"2025-08-21","clicks":30,"impressions":851,"ctr":0.0353,"position":10.6},{"date":"2025-08-22","clicks":25,"impressions":784,"ctr":0.0319,"position":9.9},{"date":"2025-08-23","clicks":25,"impressions":756,"ctr":0.0331,"position":10.4},{"date":"2025-08-24","clicks":26,"impressions":1099,"ctr":0.0237,"position":20.9},{"date":"2025-08-25","clicks":29,"impressions":891,"ctr":0.0325,"position":11.6},{"date":"2025-08-26","clicks":27,"impressions":829,"ctr":0.0326,"position":10.3},{"date":"2025-08-27","clicks":27,"impressions":862,"ctr":0.0313,"position":10.4},{"date":"2025-08-28","clicks":24,"impressions":920,"ctr":0.0261,"position":9.8},{"date":"2025-08-29","clicks":25,"impressions":933,"ctr":0.0268,"position":10.8},{"date":"2025-08-30","clicks":60,"impressions":873,"ctr":0.0687,"position":10.7},{"date":"2025-08-31","clicks":47,"impressions":868,"ctr":0.0541,"position":10},{"date":"2025-09-01","clicks":32,"impressions":1095,"ctr":0.0292,"position":10.8},{"date":"2025-09-02","clicks":20,"impressions":1078,"ctr":0.0186,"position":10.6},{"date":"2025-09-03","clicks":17,"impressions":1065,"ctr":0.016,"position":10.3},{"date":"2025-09-04","clicks":23,"impressions":1026,"ctr":0.0224,"position":10},{"date":"2025-09-05","clicks":25,"impressions":839,"ctr":0.0298,"position":10.5},{"date":"2025-09-06","clicks":17,"impressions":760,"ctr":0.0224,"position":11.4},{"date":"2025-09-07","clicks":15,"impressions":787,"ctr":0.0191,"position":11.8},{"date":"2025-09-08","clicks":22,"impressions":1040,"ctr":0.0212,"position":9.6},{"date":"2025-09-09","clicks":25,"impressions":976,"ctr":0.0256,"position":10},{"date":"2025-09-10","clicks":17,"impressions":950,"ctr":0.0179,"position":10},{"date":"2025-09-11","clicks":16,"impressions":862,"ctr":0.0186,"position":8.4},{"date":"2025-09-12","clicks":19,"impressions":748,"ctr":0.0254,"position":8.8},{"date":"2025-09-13","clicks":20,"impressions":647,"ctr":0.0309,"position":6.9},{"date":"2025-09-14","clicks":19,"impressions":684,"ctr":0.0278,"position":7.7},{"date":"2025-09-15","clicks":37,"impressions":917,"ctr":0.0403,"position":7.7},{"date":"2025-09-16","clicks":12,"impressions":910,"ctr":0.0132,"position":7.3},{"date":"2025-09-17","clicks":19,"impressions":920,"ctr":0.0207,"position":7},{"date":"2025-09-18","clicks":17,"impressions":892,"ctr":0.0191,"position":7.5},{"date":"2025-09-19","clicks":12,"impressions":842,"ctr":0.0143,"position":7.7},{"date":"2025-09-20","clicks":16,"impressions":696,"ctr":0.023,"position":7},{"date":"2025-09-21","clicks":13,"impressions":632,"ctr":0.0206,"position":6.6},{"date":"2025-09-22","clicks":20,"impressions":858,"ctr":0.0233,"position":7.3},{"date":"2025-09-23","clicks":17,"impressions":830,"ctr":0.0205,"position":7.2},{"date":"2025-09-24","clicks":17,"impressions":913,"ctr":0.0186,"position":7.7},{"date":"2025-09-25","clicks":14,"impressions":824,"ctr":0.017,"position":7.4},{"date":"2025-09-26","clicks":19,"impressions":796,"ctr":0.0239,"position":8.6},{"date":"2025-09-27","clicks":11,"impressions":716,"ctr":0.0154,"position":7.5},{"date":"2025-09-28","clicks":23,"impressions":784,"ctr":0.0293,"position":8.3},{"date":"2025-09-29","clicks":18,"impressions":844,"ctr":0.0213,"position":7.5},{"date":"2025-09-30","clicks":23,"impressions":872,"ctr":0.0264,"position":7.2},{"date":"2025-10-01","clicks":30,"impressions":873,"ctr":0.0344,"position":7.2},{"date":"2025-10-02","clicks":12,"impressions":925,"ctr":0.013,"position":7.1},{"date":"2025-10-03","clicks":15,"impressions":899,"ctr":0.0167,"position":6.8},{"date":"2025-10-04","clicks":14,"impressions":825,"ctr":0.017,"position":6.5},{"date":"2025-10-05","clicks":19,"impressions":804,"ctr":0.0236,"position":7.1},{"date":"2025-10-06","clicks":16,"impressions":990,"ctr":0.0162,"position":6.5},{"date":"2025-10-07","clicks":27,"impressions":1024,"ctr":0.0264,"position":6.9},{"date":"2025-10-08","clicks":17,"impressions":907,"ctr":0.0187,"position":7.1},{"date":"2025-10-09","clicks":16,"impressions":909,"ctr":0.0176,"position":6.7},{"date":"2025-10-10","clicks":18,"impressions":790,"ctr":0.0228,"position":7.1},{"date":"2025-10-11","clicks":15,"impressions":782,"ctr":0.0192,"position":7},{"date":"2025-10-12","clicks":18,"impressions":776,"ctr":0.0232,"position":7.4},{"date":"2025-10-13","clicks":19,"impressions":932,"ctr":0.0204,"position":7.3},{"date":"2025-10-14","clicks":18,"impressions":1021,"ctr":0.0176,"position":7.9},{"date":"2025-10-15","clicks":13,"impressions":978,"ctr":0.0133,"position":7.7},{"date":"2025-10-16","clicks":26,"impressions":922,"ctr":0.0282,"position":7.2},{"date":"2025-10-17","clicks":12,"impressions":1089,"ctr":0.011,"position":7.7},{"date":"2025-10-18","clicks":14,"impressions":1026,"ctr":0.0136,"position":8.1},{"date":"2025-10-19","clicks":30,"impressions":990,"ctr":0.0303,"position":8.1},{"date":"2025-10-20","clicks":24,"impressions":1137,"ctr":0.0211,"position":7.4},{"date":"2025-10-21","clicks":19,"impressions":1154,"ctr":0.0165,"position":7.9},{"date":"2025-10-22","clicks":22,"impressions":854,"ctr":0.0258,"position":7.3},{"date":"2025-10-23","clicks":12,"impressions":836,"ctr":0.0144,"position":6.9},{"date":"2025-10-24","clicks":8,"impressions":894,"ctr":0.0089,"position":7.7},{"date":"2025-10-25","clicks":9,"impressions":772,"ctr":0.0117,"position":8},{"date":"2025-10-26","clicks":11,"impressions":899,"ctr":0.0122,"position":7.7},{"date":"2025-10-27","clicks":20,"impressions":1073,"ctr":0.0186,"position":6.6},{"date":"2025-10-28","clicks":16,"impressions":983,"ctr":0.0163,"position":6.7},{"date":"2025-10-29","clicks":16,"impressions":1213,"ctr":0.0132,"position":7.4},{"date":"2025-10-30","clicks":13,"impressions":1188,"ctr":0.0109,"position":7.4},{"date":"2025-10-31","clicks":23,"impressions":1152,"ctr":0.02,"position":8.5},{"date":"2025-11-01","clicks":13,"impressions":1174,"ctr":0.0111,"position":8.4},{"date":"2025-11-02","clicks":31,"impressions":1339,"ctr":0.0232,"position":7.8},{"date":"2025-11-03","clicks":17,"impressions":1375,"ctr":0.0124,"position":8.6},{"date":"2025-11-04","clicks":21,"impressions":1299,"ctr":0.0162,"position":7.7},{"date":"2025-11-05","clicks":21,"impressions":1223,"ctr":0.0172,"position":7.8},{"date":"2025-11-06","clicks":12,"impressions":1194,"ctr":0.0101,"position":7.8},{"date":"2025-11-07","clicks":29,"impressions":1114,"ctr":0.026,"position":7.3},{"date":"2025-11-08","clicks":10,"impressions":1097,"ctr":0.0091,"position":7.2},{"date":"2025-11-09","clicks":15,"impressions":1188,"ctr":0.0126,"position":8.6},{"date":"2025-11-10","clicks":25,"impressions":1320,"ctr":0.0189,"position":7.4},{"date":"2025-11-11","clicks":24,"impressions":1341,"ctr":0.0179,"position":7.6},{"date":"2025-11-12","clicks":18,"impressions":1265,"ctr":0.0142,"position":7.9},{"date":"2025-11-13","clicks":21,"impressions":1209,"ctr":0.0174,"position":7.5},{"date":"2025-11-14","clicks":12,"impressions":1315,"ctr":0.0091,"position":8.4},{"date":"2025-11-15","clicks":20,"impressions":1265,"ctr":0.0158,"position":8.2},{"date":"2025-11-16","clicks":17,"impressions":1454,"ctr":0.0117,"position":11.3},{"date":"2025-11-17","clicks":19,"impressions":1484,"ctr":0.0128,"position":8.2},{"date":"2025-11-18","clicks":20,"impressions":1265,"ctr":0.0158,"position":8.5},{"date":"2025-11-19","clicks":18,"impressions":1188,"ctr":0.0152,"position":8.1},{"date":"2025-11-20","clicks":14,"impressions":1119,"ctr":0.0125,"position":7.7},{"date":"2025-11-21","clicks":21,"impressions":1186,"ctr":0.0177,"position":7.6},{"date":"2025-11-22","clicks":24,"impressions":1210,"ctr":0.0198,"position":7.7},{"date":"2025-11-23","clicks":39,"impressions":1357,"ctr":0.0287,"position":8},{"date":"2025-11-24","clicks":31,"impressions":1434,"ctr":0.0216,"position":7.1},{"date":"2025-11-25","clicks":44,"impressions":1396,"ctr":0.0315,"position":7.5},{"date":"2025-11-26","clicks":88,"impressions":1451,"ctr":0.0606,"position":7.5},{"date":"2025-11-27","clicks":59,"impressions":1291,"ctr":0.0457,"position":7.2},{"date":"2025-11-28","clicks":140,"impressions":1408,"ctr":0.0994,"position":6.5},{"date":"2025-11-29","clicks":52,"impressions":1084,"ctr":0.048,"position":7.4},{"date":"2025-11-30","clicks":75,"impressions":1186,"ctr":0.0632,"position":7.5},{"date":"2025-12-01","clicks":37,"impressions":1353,"ctr":0.0273,"position":6.9},{"date":"2025-12-02","clicks":32,"impressions":1558,"ctr":0.0205,"position":7.2},{"date":"2025-12-03","clicks":23,"impressions":1427,"ctr":0.0161,"position":6.9},{"date":"2025-12-04","clicks":23,"impressions":1374,"ctr":0.0167,"position":7.6},{"date":"2025-12-05","clicks":23,"impressions":1321,"ctr":0.0174,"position":7.1},{"date":"2025-12-06","clicks":19,"impressions":1119,"ctr":0.017,"position":7.3},{"date":"2025-12-07","clicks":24,"impressions":1568,"ctr":0.0153,"position":8},{"date":"2025-12-08","clicks":35,"impressions":1744,"ctr":0.0201,"position":7.5},{"date":"2025-12-09","clicks":31,"impressions":1864,"ctr":0.0166,"position":7.7},{"date":"2025-12-10","clicks":21,"impressions":1604,"ctr":0.0131,"position":7.9},{"date":"2025-12-11","clicks":24,"impressions":1510,"ctr":0.0159,"position":8},{"date":"2025-12-12","clicks":19,"impressions":1211,"ctr":0.0157,"position":7.8},{"date":"2025-12-13","clicks":31,"impressions":1182,"ctr":0.0262,"position":8.2},{"date":"2025-12-14","clicks":44,"impressions":1633,"ctr":0.0269,"position":8},{"date":"2025-12-15","clicks":30,"impressions":1758,"ctr":0.0171,"position":7.5},{"date":"2025-12-16","clicks":35,"impressions":1763,"ctr":0.0199,"position":7.6},{"date":"2025-12-17","clicks":21,"impressions":1783,"ctr":0.0118,"position":7.8},{"date":"2025-12-18","clicks":28,"impressions":1597,"ctr":0.0175,"position":7.6},{"date":"2025-12-19","clicks":26,"impressions":1367,"ctr":0.019,"position":8.6},{"date":"2025-12-20","clicks":22,"impressions":1199,"ctr":0.0183,"position":7.8},{"date":"2025-12-21","clicks":41,"impressions":1287,"ctr":0.0319,"position":7.1},{"date":"2025-12-22","clicks":28,"impressions":1412,"ctr":0.0198,"position":10.2},{"date":"2025-12-23","clicks":19,"impressions":1105,"ctr":0.0172,"position":8.5},{"date":"2025-12-24","clicks":11,"impressions":714,"ctr":0.0154,"position":8.8},{"date":"2025-12-25","clicks":21,"impressions":946,"ctr":0.0222,"position":8.5},{"date":"2025-12-26","clicks":23,"impressions":1443,"ctr":0.0159,"position":7.7},{"date":"2025-12-27","clicks":18,"impressions":1280,"ctr":0.0141,"position":7.6},{"date":"2025-12-28","clicks":32,"impressions":1500,"ctr":0.0213,"position":7.5},{"date":"2025-12-29","clicks":44,"impressions":1847,"ctr":0.0238,"position":7.1},{"date":"2025-12-30","clicks":20,"impressions":1601,"ctr":0.0125,"position":7.2},{"date":"2025-12-31","clicks":16,"impressions":1003,"ctr":0.016,"position":7.8},{"date":"2026-01-01","clicks":29,"impressions":1418,"ctr":0.0205,"position":7.3},{"date":"2026-01-02","clicks":33,"impressions":2583,"ctr":0.0128,"position":6.9},{"date":"2026-01-03","clicks":51,"impressions":2564,"ctr":0.0199,"position":7},{"date":"2026-01-04","clicks":58,"impressions":2617,"ctr":0.0222,"position":6.9},{"date":"2026-01-05","clicks":47,"impressions":3080,"ctr":0.0153,"position":6.9},{"date":"2026-01-06","clicks":40,"impressions":3076,"ctr":0.013,"position":6.9},{"date":"2026-01-07","clicks":71,"impressions":4435,"ctr":0.016,"position":6.5},{"date":"2026-01-08","clicks":61,"impressions":4351,"ctr":0.014,"position":6.6},{"date":"2026-01-09","clicks":43,"impressions":4111,"ctr":0.0105,"position":7.3},{"date":"2026-01-10","clicks":22,"impressions":3090,"ctr":0.0071,"position":7.3},{"date":"2026-01-11","clicks":31,"impressions":3209,"ctr":0.0097,"position":8},{"date":"2026-01-12","clicks":60,"impressions":4386,"ctr":0.0137,"position":8},{"date":"2026-01-13","clicks":48,"impressions":3817,"ctr":0.0126,"position":6.9},{"date":"2026-01-14","clicks":54,"impressions":4187,"ctr":0.0129,"position":6.8},{"date":"2026-01-15","clicks":56,"impressions":4456,"ctr":0.0126,"position":7.2},{"date":"2026-01-16","clicks":37,"impressions":3848,"ctr":0.0096,"position":7.3},{"date":"2026-01-17","clicks":28,"impressions":2864,"ctr":0.0098,"position":6.8},{"date":"2026-01-18","clicks":49,"impressions":3506,"ctr":0.014,"position":8.2},{"date":"2026-01-19","clicks":56,"impressions":4493,"ctr":0.0125,"position":6.9},{"date":"2026-01-20","clicks":61,"impressions":5265,"ctr":0.0116,"position":6.5},{"date":"2026-01-21","clicks":62,"impressions":4561,"ctr":0.0136,"position":7},{"date":"2026-01-22","clicks":67,"impressions":4595,"ctr":0.0146,"position":6.8},{"date":"2026-01-23","clicks":69,"impressions":3753,"ctr":0.0184,"position":7},{"date":"2026-01-24","clicks":50,"impressions":2836,"ctr":0.0176,"position":7.2},{"date":"2026-01-25","clicks":55,"impressions":2729,"ctr":0.0202,"position":7.3},{"date":"2026-01-26","clicks":55,"impressions":4239,"ctr":0.013,"position":7.2},{"date":"2026-01-27","clicks":42,"impressions":3701,"ctr":0.0113,"position":6.9},{"date":"2026-01-28","clicks":89,"impressions":3651,"ctr":0.0244,"position":7},{"date":"2026-01-29","clicks":115,"impressions":4532,"ctr":0.0254,"position":6.9},{"date":"2026-01-30","clicks":55,"impressions":3508,"ctr":0.0157,"position":7.4},{"date":"2026-01-31","clicks":44,"impressions":2952,"ctr":0.0149,"position":7.4},{"date":"2026-02-01","clicks":45,"impressions":2845,"ctr":0.0158,"position":7.4},{"date":"2026-02-02","clicks":46,"impressions":3654,"ctr":0.0126,"position":7.1},{"date":"2026-02-03","clicks":55,"impressions":3876,"ctr":0.0142,"position":6.9},{"date":"2026-02-04","clicks":48,"impressions":3725,"ctr":0.0129,"position":7.3},{"date":"2026-02-05","clicks":43,"impressions":2956,"ctr":0.0145,"position":7.5},{"date":"2026-02-06","clicks":36,"impressions":2664,"ctr":0.0135,"position":7.7},{"date":"2026-02-07","clicks":57,"impressions":2636,"ctr":0.0216,"position":7.6},{"date":"2026-02-08","clicks":48,"impressions":2918,"ctr":0.0164,"position":7.5},{"date":"2026-02-09","clicks":46,"impressions":3494,"ctr":0.0132,"position":7.4},{"date":"2026-02-10","clicks":36,"impressions":3251,"ctr":0.0111,"position":8.1},{"date":"2026-02-11","clicks":48,"impressions":3144,"ctr":0.0153,"position":7.8},{"date":"2026-02-12","clicks":37,"impressions":2620,"ctr":0.0141,"position":8},{"date":"2026-02-13","clicks":23,"impressions":2147,"ctr":0.0107,"position":7.4},{"date":"2026-02-14","clicks":29,"impressions":1282,"ctr":0.0226,"position":7},{"date":"2026-02-15","clicks":17,"impressions":1149,"ctr":0.0148,"position":6.9},{"date":"2026-02-16","clicks":41,"impressions":1906,"ctr":0.0215,"position":7},{"date":"2026-02-17","clicks":34,"impressions":2101,"ctr":0.0162,"position":7.3},{"date":"2026-02-18","clicks":40,"impressions":2638,"ctr":0.0152,"position":7.5},{"date":"2026-02-19","clicks":52,"impressions":2758,"ctr":0.0189,"position":7.3},{"date":"2026-02-20","clicks":44,"impressions":2241,"ctr":0.0196,"position":7.4},{"date":"2026-02-21","clicks":41,"impressions":1944,"ctr":0.0211,"position":7.2},{"date":"2026-02-22","clicks":41,"impressions":1980,"ctr":0.0207,"position":7.2},{"date":"2026-02-23","clicks":46,"impressions":2479,"ctr":0.0186,"position":8},{"date":"2026-02-24","clicks":75,"impressions":2569,"ctr":0.0292,"position":8.3},{"date":"2026-02-25","clicks":66,"impressions":2783,"ctr":0.0237,"position":7},{"date":"2026-02-26","clicks":51,"impressions":2738,"ctr":0.0186,"position":6.8},{"date":"2026-02-27","clicks":48,"impressions":2620,"ctr":0.0183,"position":7.1},{"date":"2026-02-28","clicks":39,"impressions":2493,"ctr":0.0156,"position":7.2},{"date":"2026-03-01","clicks":39,"impressions":1681,"ctr":0.0232,"position":7.1},{"date":"2026-03-02","clicks":47,"impressions":1559,"ctr":0.0301,"position":6.6},{"date":"2026-03-03","clicks":32,"impressions":1693,"ctr":0.0189,"position":6.8},{"date":"2026-03-04","clicks":63,"impressions":1817,"ctr":0.0347,"position":5.7},{"date":"2026-03-05","clicks":48,"impressions":1649,"ctr":0.0291,"position":5.9},{"date":"2026-03-06","clicks":60,"impressions":1738,"ctr":0.0345,"position":6.1},{"date":"2026-03-07","clicks":31,"impressions":1713,"ctr":0.0181,"position":7.1},{"date":"2026-03-08","clicks":31,"impressions":1528,"ctr":0.0203,"position":7.3},{"date":"2026-03-09","clicks":36,"impressions":1954,"ctr":0.0184,"position":7.5},{"date":"2026-03-10","clicks":27,"impressions":1533,"ctr":0.0176,"position":7.2},{"date":"2026-03-11","clicks":33,"impressions":1263,"ctr":0.0261,"position":6.8},{"date":"2026-03-12","clicks":32,"impressions":1381,"ctr":0.0232,"position":7.6},{"date":"2026-03-13","clicks":32,"impressions":1141,"ctr":0.028,"position":7.2},{"date":"2026-03-14","clicks":28,"impressions":1172,"ctr":0.0239,"position":6.4},{"date":"2026-03-15","clicks":40,"impressions":1414,"ctr":0.0283,"position":6.6},{"date":"2026-03-16","clicks":40,"impressions":1204,"ctr":0.0332,"position":7},{"date":"2026-03-17","clicks":35,"impressions":1128,"ctr":0.031,"position":6.8},{"date":"2026-03-18","clicks":18,"impressions":959,"ctr":0.0188,"position":6.7},{"date":"2026-03-19","clicks":24,"impressions":1015,"ctr":0.0236,"position":7},{"date":"2026-03-20","clicks":24,"impressions":1478,"ctr":0.0162,"position":7.2},{"date":"2026-03-21","clicks":30,"impressions":1840,"ctr":0.0163,"position":7},{"date":"2026-03-22","clicks":38,"impressions":2032,"ctr":0.0187,"position":7.2},{"date":"2026-03-23","clicks":45,"impressions":2582,"ctr":0.0174,"position":6.6},{"date":"2026-03-24","clicks":42,"impressions":2580,"ctr":0.0163,"position":6.6},{"date":"2026-03-25","clicks":46,"impressions":2248,"ctr":0.0205,"position":6.9},{"date":"2026-03-26","clicks":37,"impressions":1525,"ctr":0.0243,"position":6.9},{"date":"2026-03-27","clicks":28,"impressions":1107,"ctr":0.0253,"position":7},{"date":"2026-03-28","clicks":25,"impressions":1108,"ctr":0.0226,"position":7.6},{"date":"2026-03-29","clicks":39,"impressions":1137,"ctr":0.0343,"position":6.7},{"date":"2026-03-30","clicks":98,"impressions":1522,"ctr":0.0644,"position":7.2},{"date":"2026-03-31","clicks":58,"impressions":1530,"ctr":0.0379,"position":7.2},{"date":"2026-04-01","clicks":42,"impressions":1513,"ctr":0.0278,"position":7.8},{"date":"2026-04-02","clicks":45,"impressions":1340,"ctr":0.0336,"position":7.6},{"date":"2026-04-03","clicks":42,"impressions":1464,"ctr":0.0287,"position":8.3},{"date":"2026-04-04","clicks":30,"impressions":1531,"ctr":0.0196,"position":8.1},{"date":"2026-04-05","clicks":23,"impressions":1632,"ctr":0.0141,"position":8},{"date":"2026-04-06","clicks":32,"impressions":1920,"ctr":0.0167,"position":8.1},{"date":"2026-04-07","clicks":44,"impressions":1624,"ctr":0.0271,"position":7.4},{"date":"2026-04-08","clicks":33,"impressions":1368,"ctr":0.0241,"position":7.3},{"date":"2026-04-09","clicks":32,"impressions":1266,"ctr":0.0253,"position":6.9},{"date":"2026-04-10","clicks":37,"impressions":1161,"ctr":0.0319,"position":6.5},{"date":"2026-04-11","clicks":32,"impressions":1157,"ctr":0.0277,"position":6.6},{"date":"2026-04-12","clicks":29,"impressions":1267,"ctr":0.0229,"position":6.1},{"date":"2026-04-13","clicks":34,"impressions":1418,"ctr":0.024,"position":6.6},{"date":"2026-04-14","clicks":38,"impressions":1473,"ctr":0.0258,"position":6.3},{"date":"2026-04-15","clicks":21,"impressions":1561,"ctr":0.0135,"position":6.8},{"date":"2026-04-16","clicks":30,"impressions":1719,"ctr":0.0175,"position":7.5},{"date":"2026-04-17","clicks":33,"impressions":1575,"ctr":0.021,"position":7.5},{"date":"2026-04-18","clicks":48,"impressions":1584,"ctr":0.0303,"position":7.3},{"date":"2026-04-19","clicks":31,"impressions":1515,"ctr":0.0205,"position":7.5},{"date":"2026-04-20","clicks":33,"impressions":1542,"ctr":0.0214,"position":7.6},{"date":"2026-04-21","clicks":33,"impressions":1521,"ctr":0.0217,"position":8.1},{"date":"2026-04-22","clicks":45,"impressions":1613,"ctr":0.0279,"position":7.8},{"date":"2026-04-23","clicks":23,"impressions":1125,"ctr":0.0204,"position":7.3},{"date":"2026-04-24","clicks":25,"impressions":986,"ctr":0.0254,"position":7.4},{"date":"2026-04-25","clicks":25,"impressions":895,"ctr":0.0279,"position":7.7},{"date":"2026-04-26","clicks":36,"impressions":1113,"ctr":0.0323,"position":7.2},{"date":"2026-04-27","clicks":27,"impressions":1365,"ctr":0.0198,"position":8.2},{"date":"2026-04-28","clicks":28,"impressions":1415,"ctr":0.0198,"position":6.9},{"date":"2026-04-29","clicks":22,"impressions":1531,"ctr":0.0144,"position":7.7},{"date":"2026-04-30","clicks":25,"impressions":1161,"ctr":0.0215,"position":7},{"date":"2026-05-01","clicks":29,"impressions":1166,"ctr":0.0249,"position":8},{"date":"2026-05-02","clicks":20,"impressions":1167,"ctr":0.0171,"position":7.3},{"date":"2026-05-03","clicks":35,"impressions":1424,"ctr":0.0246,"position":7.4},{"date":"2026-05-04","clicks":44,"impressions":1521,"ctr":0.0289,"position":6.7},{"date":"2026-05-05","clicks":21,"impressions":1477,"ctr":0.0142,"position":7},{"date":"2026-05-06","clicks":21,"impressions":1312,"ctr":0.016,"position":6.6},{"date":"2026-05-07","clicks":30,"impressions":1171,"ctr":0.0256,"position":6.7},{"date":"2026-05-08","clicks":33,"impressions":773,"ctr":0.0427,"position":7.4},{"date":"2026-05-09","clicks":28,"impressions":761,"ctr":0.0368,"position":7.7},{"date":"2026-05-10","clicks":24,"impressions":777,"ctr":0.0309,"position":7.7},{"date":"2026-05-11","clicks":34,"impressions":1255,"ctr":0.0271,"position":7.7},{"date":"2026-05-12","clicks":28,"impressions":1213,"ctr":0.0231,"position":7.9},{"date":"2026-05-13","clicks":28,"impressions":1011,"ctr":0.0277,"position":8.1},{"date":"2026-05-14","clicks":28,"impressions":1038,"ctr":0.027,"position":7.4},{"date":"2026-05-15","clicks":29,"impressions":1197,"ctr":0.0242,"position":6.8},{"date":"2026-05-16","clicks":23,"impressions":1137,"ctr":0.0202,"position":6.9},{"date":"2026-05-17","clicks":32,"impressions":1361,"ctr":0.0235,"position":7.3},{"date":"2026-05-18","clicks":32,"impressions":1496,"ctr":0.0214,"position":5.8},{"date":"2026-05-19","clicks":27,"impressions":1546,"ctr":0.0175,"position":6.3},{"date":"2026-05-20","clicks":16,"impressions":1503,"ctr":0.0106,"position":7.1},{"date":"2026-05-21","clicks":19,"impressions":1395,"ctr":0.0136,"position":7.1},{"date":"2026-05-22","clicks":27,"impressions":1093,"ctr":0.0247,"position":7.7},{"date":"2026-05-23","clicks":11,"impressions":1039,"ctr":0.0106,"position":7.9},{"date":"2026-05-24","clicks":27,"impressions":1249,"ctr":0.0216,"position":7.3},{"date":"2026-05-25","clicks":23,"impressions":1303,"ctr":0.0177,"position":7.7},{"date":"2026-05-26","clicks":26,"impressions":1384,"ctr":0.0188,"position":7},{"date":"2026-05-27","clicks":23,"impressions":1264,"ctr":0.0182,"position":6.5},{"date":"2026-05-28","clicks":15,"impressions":1175,"ctr":0.0128,"position":7},{"date":"2026-05-29","clicks":14,"impressions":1079,"ctr":0.013,"position":7.3},{"date":"2026-05-30","clicks":21,"impressions":1037,"ctr":0.0203,"position":7.1},{"date":"2026-05-31","clicks":18,"impressions":1353,"ctr":0.0133,"position":7.3},{"date":"2026-06-01","clicks":19,"impressions":1391,"ctr":0.0137,"position":7.7},{"date":"2026-06-02","clicks":25,"impressions":1230,"ctr":0.0203,"position":7.7},{"date":"2026-06-03","clicks":22,"impressions":916,"ctr":0.024,"position":8.3},{"date":"2026-06-04","clicks":22,"impressions":857,"ctr":0.0257,"position":7.6},{"date":"2026-06-05","clicks":15,"impressions":804,"ctr":0.0187,"position":7.8},{"date":"2026-06-06","clicks":21,"impressions":851,"ctr":0.0247,"position":8.5},{"date":"2026-06-07","clicks":18,"impressions":874,"ctr":0.0206,"position":7.7},{"date":"2026-06-08","clicks":27,"impressions":1020,"ctr":0.0265,"position":7.4},{"date":"2026-06-09","clicks":21,"impressions":1014,"ctr":0.0207,"position":8.2},{"date":"2026-06-10","clicks":22,"impressions":1040,"ctr":0.0212,"position":8},{"date":"2026-06-11","clicks":25,"impressions":765,"ctr":0.0327,"position":7.2},{"date":"2026-06-12","clicks":11,"impressions":638,"ctr":0.0172,"position":7.9},{"date":"2026-06-13","clicks":17,"impressions":842,"ctr":0.0202,"position":7.6},{"date":"2026-06-14","clicks":18,"impressions":1017,"ctr":0.0177,"position":7.1},{"date":"2026-06-15","clicks":35,"impressions":1342,"ctr":0.0261,"position":6.8},{"date":"2026-06-16","clicks":35,"impressions":1339,"ctr":0.0261,"position":7.3},{"date":"2026-06-17","clicks":28,"impressions":1343,"ctr":0.0208,"position":7.5},{"date":"2026-06-18","clicks":26,"impressions":1192,"ctr":0.0218,"position":7.4},{"date":"2026-06-19","clicks":19,"impressions":998,"ctr":0.019,"position":8},{"date":"2026-06-20","clicks":43,"impressions":974,"ctr":0.0441,"position":7.4},{"date":"2026-06-21","clicks":43,"impressions":1067,"ctr":0.0403,"position":7.9},{"date":"2026-06-22","clicks":50,"impressions":1117,"ctr":0.0448,"position":7.6},{"date":"2026-06-23","clicks":28,"impressions":978,"ctr":0.0286,"position":8.1},{"date":"2026-06-24","clicks":25,"impressions":1087,"ctr":0.023,"position":8.1},{"date":"2026-06-25","clicks":18,"impressions":1146,"ctr":0.0157,"position":8.2},{"date":"2026-06-26","clicks":30,"impressions":948,"ctr":0.0316,"position":7.7},{"date":"2026-06-27","clicks":32,"impressions":932,"ctr":0.0343,"position":7.5},{"date":"2026-06-28","clicks":35,"impressions":1058,"ctr":0.0331,"position":7.4},{"date":"2026-06-29","clicks":24,"impressions":1076,"ctr":0.0223,"position":7.5},{"date":"2026-06-30","clicks":18,"impressions":1375,"ctr":0.0131,"position":7.2},{"date":"2026-07-01","clicks":27,"impressions":1276,"ctr":0.0212,"position":7.9},{"date":"2026-07-02","clicks":23,"impressions":1236,"ctr":0.0186,"position":7},{"date":"2026-07-03","clicks":28,"impressions":1166,"ctr":0.024,"position":6.8},{"date":"2026-07-04","clicks":13,"impressions":960,"ctr":0.0135,"position":7.5},{"date":"2026-07-05","clicks":14,"impressions":818,"ctr":0.0171,"position":7.9},{"date":"2026-07-06","clicks":24,"impressions":1290,"ctr":0.0186,"position":7.4},{"date":"2026-07-07","clicks":19,"impressions":1349,"ctr":0.0141,"position":7.7},{"date":"2026-07-08","clicks":22,"impressions":1098,"ctr":0.02,"position":7.6},{"date":"2026-07-09","clicks":16,"impressions":712,"ctr":0.0225,"position":7.5},{"date":"2026-07-10","clicks":11,"impressions":794,"ctr":0.0139,"position":7.9},{"date":"2026-07-11","clicks":20,"impressions":964,"ctr":0.0207,"position":9.2},{"date":"2026-07-12","clicks":20,"impressions":1176,"ctr":0.017,"position":7.7},{"date":"2026-07-13","clicks":23,"impressions":1502,"ctr":0.0153,"position":8},{"date":"2026-07-14","clicks":32,"impressions":1401,"ctr":0.0228,"position":7.7},{"date":"2026-07-15","clicks":14,"impressions":1200,"ctr":0.0117,"position":7.8},{"date":"2026-07-16","clicks":17,"impressions":907,"ctr":0.0187,"position":8.3},{"date":"2026-07-17","clicks":19,"impressions":857,"ctr":0.0222,"position":8.2},{"date":"2026-07-18","clicks":17,"impressions":679,"ctr":0.025,"position":7},{"date":"2026-07-19","clicks":19,"impressions":758,"ctr":0.0251,"position":8.5},{"date":"2026-07-20","clicks":13,"impressions":870,"ctr":0.0149,"position":7.5},{"date":"2026-07-21","clicks":15,"impressions":857,"ctr":0.0175,"position":7.1},{"date":"2026-07-22","clicks":20,"impressions":1104,"ctr":0.0181,"position":6.4},{"date":"2026-07-23","clicks":10,"impressions":1259,"ctr":0.0079,"position":6.1},{"date":"2026-07-24","clicks":17,"impressions":1268,"ctr":0.0134,"position":6.5},{"date":"2026-07-25","clicks":17,"impressions":1065,"ctr":0.016,"position":6.7},{"date":"2026-07-26","clicks":22,"impressions":1111,"ctr":0.0198,"position":6.9},{"date":"2026-07-27","clicks":39,"impressions":1350,"ctr":0.0289,"position":6.7},{"date":"2026-07-28","clicks":21,"impressions":1329,"ctr":0.0158,"position":7.2},{"date":"2026-07-29","clicks":22,"impressions":1306,"ctr":0.0168,"position":7.1},{"date":"2026-07-30","clicks":24,"impressions":1271,"ctr":0.0189,"position":7.1},{"date":"2026-07-31","clicks":21,"impressions":1164,"ctr":0.018,"position":7.6},{"date":"2026-08-01","clicks":18,"impressions":1048,"ctr":0.0172,"position":8.5},{"date":"2026-08-02","clicks":28,"impressions":1263,"ctr":0.0222,"position":8.3},{"date":"2026-08-03","clicks":24,"impressions":1427,"ctr":0.0168,"position":7.9},{"date":"2026-08-04","clicks":22,"impressions":1243,"ctr":0.0177,"position":7.7},{"date":"2026-08-05","clicks":22,"impressions":1274,"ctr":0.0173,"position":7.1},{"date":"2026-08-06","clicks":19,"impressions":1235,"ctr":0.0154,"position":6.6},{"date":"2026-08-07","clicks":18,"impressions":1160,"ctr":0.0155,"position":6.8},{"date":"2026-08-08","clicks":15,"impressions":1058,"ctr":0.0142,"position":7.2},{"date":"2026-08-09","clicks":21,"impressions":1035,"ctr":0.0203,"position":7.2},{"date":"2026-08-10","clicks":27,"impressions":1334,"ctr":0.0202,"position":7.4},{"date":"2026-08-11","clicks":27,"impressions":1376,"ctr":0.0196,"position":7.8},{"date":"2026-08-12","clicks":15,"impressions":1387,"ctr":0.0108,"position":7.7}]
+;
+
+const topPages = [{"page":"yamysbaby.com/","clicks":215,"impressions":4118,"ctr":0.0522,"position":4.7},{"page":"/mochilas-e-bolsas/mochilas","clicks":84,"impressions":12132,"ctr":0.0069,"position":7.3},{"page":"/mochilas","clicks":32,"impressions":1731,"ctr":0.0185,"position":4.1},{"page":"/produto/mochila-maternidade-pratica-sabia-94","clicks":31,"impressions":1267,"ctr":0.0245,"position":5.7},{"page":"/bolsao-yamys","clicks":22,"impressions":1634,"ctr":0.0135,"position":3.1},{"page":"/mochila-infantil","clicks":22,"impressions":4742,"ctr":0.0046,"position":9.0},{"page":"/organizador-carrinho","clicks":13,"impressions":1985,"ctr":0.0065,"position":5.2},{"page":"/produto/mochila-maternidade-pratica-gaivota-60","clicks":13,"impressions":728,"ctr":0.0179,"position":4.6},{"page":"/pochetes-yamys","clicks":11,"impressions":157,"ctr":0.0701,"position":1.8},{"page":"/produto/mochila-infantil-2-em-1-gaivota-195","clicks":11,"impressions":222,"ctr":0.0495,"position":4.5},{"page":"/bone","clicks":9,"impressions":210,"ctr":0.0429,"position":6.8},{"page":"/mama","clicks":9,"impressions":306,"ctr":0.0294,"position":4.0},{"page":"/trocador-completo","clicks":8,"impressions":3390,"ctr":0.0024,"position":8.0},{"page":"/mochilas-e-bolsas","clicks":6,"impressions":1776,"ctr":0.0034,"position":2.3},{"page":"/produto/mochila-maternidade-pratica-maca-93","clicks":6,"impressions":1512,"ctr":0.004,"position":5.9}];
+
+const topQueries = [{"query":"mochila maternidade","clicks":85,"impressions":9234,"ctr":0.0092,"position":7.9},{"query":"yamys","clicks":45,"impressions":522,"ctr":0.0862,"position":1.2},{"query":"yamis","clicks":30,"impressions":452,"ctr":0.0664,"position":1.4},{"query":"yamys baby","clicks":30,"impressions":378,"ctr":0.0794,"position":1.2},{"query":"yamys mochila","clicks":11,"impressions":98,"ctr":0.1122,"position":1.7},{"query":"mochila yamys","clicks":9,"impressions":147,"ctr":0.0612,"position":1},{"query":"yammys","clicks":9,"impressions":152,"ctr":0.0592,"position":1.0},{"query":"yams","clicks":8,"impressions":257,"ctr":0.0311,"position":8.5},{"query":"yumis","clicks":8,"impressions":42,"ctr":0.1905,"position":1.4},{"query":"mochila de maternidade","clicks":6,"impressions":519,"ctr":0.0116,"position":6.7},{"query":"yamis baby","clicks":6,"impressions":78,"ctr":0.0769,"position":1.2},{"query":"yummys","clicks":6,"impressions":15,"ctr":0.4,"position":4.3},{"query":"mochila infantil","clicks":5,"impressions":47,"ctr":0.1064,"position":9.3},{"query":"yammis","clicks":5,"impressions":83,"ctr":0.0602,"position":3.0},{"query":"bolsa maternidade yamys","clicks":4,"impressions":30,"ctr":0.1333,"position":1}];
+
+const channelBreakdown = [
+  {name:"Google", sessions:11318, revenue:204932.61},
+  {name:"Bing", sessions:279, revenue:16508.04},
+  {name:"Pinterest", sessions:32, revenue:0},
+  {name:"Yahoo", sessions:14, revenue:481.05},
+  {name:"DuckDuckGo", sessions:8, revenue:695},
+  {name:"Ecosia", sessions:6, revenue:428.31}
+];
+
+const keywordOpportunities = [
+  {kw:"bolsa maternidade", vol:49500, comp:"HIGH", status:"gap"},
+  {kw:"mochila infantil", vol:40500, comp:"HIGH", status:"rank"},
+  {kw:"lancheira termica", vol:33100, comp:"HIGH", status:"recovering"},
+  {kw:"mochila infantil menino", vol:33100, comp:"HIGH", status:"gap"},
+  {kw:"trocador de bebê", vol:22200, comp:"HIGH", status:"rank"},
+  {kw:"mochila infantil feminina", vol:18100, comp:"HIGH", status:"gap"},
+  {kw:"mochila maternidade", vol:18100, comp:"HIGH", status:"rank"},
+  {kw:"lancheira térmica infantil", vol:14800, comp:"HIGH", status:"recovering"},
+  {kw:"kit bolsa maternidade", vol:9900, comp:"HIGH", status:"gap"},
+  {kw:"lancheira infantil", vol:9900, comp:"HIGH", status:"recovering"},
+  {kw:"kit mochila infantil", vol:6600, comp:"HIGH", status:"gap"},
+  {kw:"bolsa maternidade feminina", vol:5400, comp:"HIGH", status:"gap"},
+  {kw:"lancheira térmica feminina", vol:4400, comp:"HIGH", status:"recovering"},
+  {kw:"bolsa maternidade o que levar", vol:3600, comp:"MEDIUM", status:"gap"},
+  {kw:"trocador de fraldas", vol:3600, comp:"HIGH", status:"gap"},
+  {kw:"mala maternidade bebê", vol:2900, comp:"HIGH", status:"gap"},
+  {kw:"mochila maternidade menino", vol:2900, comp:"HIGH", status:"rank"},
+  {kw:"trocador de bebê portátil", vol:2400, comp:"HIGH", status:"rank"},
+  {kw:"mochila infantil passeio", vol:1900, comp:"HIGH", status:"gap"},
+  {kw:"mochila infantil masculina", vol:1900, comp:"HIGH", status:"gap"},
+  {kw:"kit bolsa maternidade feminina", vol:1900, comp:"HIGH", status:"gap"},
+  {kw:"lancheira termica masculina", vol:1600, comp:"HIGH", status:"recovering"},
+  {kw:"mochila infantil escolar", vol:1300, comp:"HIGH", status:"gap"},
+  {kw:"bolsa maternidade masculino", vol:1300, comp:"HIGH", status:"gap"},
+  {kw:"mochila infantil com lancheira", vol:1000, comp:"HIGH", status:"gap"},
+  {kw:"bolsa de passeio infantil", vol:720, comp:"HIGH", status:"gap"}
+];
+
+const GOAL_AMOUNT = 40000;
+const GOAL_END = "2026-08-31";
+const GOAL_MONTH_START = "2026-08-01";
+
+const revisions = [
+  {
+    date: "2026-08-11", tag: "diag", tagLabel: "Diagnóstico",
+    title: "Colapso do cluster “lancheira térmica” — causa raiz identificada",
+    summary: "Perda de autoridade de domínio em março/26 (não é problema técnico nem de conteúdo).",
+    body: `<p><strong>O que investigamos:</strong> por que "lancheira térmica" e termos correlatos caíram de posição 8 pra 22-39, perdendo 99,8% das impressões (41.450 → 63/mês).</p>
+    <p><strong>O que achamos:</strong> entre 1–8 de março/26, o domínio perdeu ~110 backlinks de uma vez (154 → 44 links totais). O "rank" de autoridade do domínio (DataForSEO) despencou de 149 para 7 no mesmo período. A queda de posição no Google aconteceu ~3 semanas depois — prazo típico de propagação.</p>
+    <p><strong>Por que sabemos que é autoridade, não técnico:</strong> termos de marca (yamys, yamis...) continuaram em #1-2 o tempo todo. Só os termos genéricos competitivos (que brigam com Samsonite, Bagaggio, Thermos) desabaram. A indexação da página foi confirmada normal via Search Console.</p>
+    <p><strong>Evidência de spam:</strong> encontramos um backlink recente vindo de um site cujo título era literalmente "Boost your Google rankings with Premium PBN & Link Building", usando "yamysbaby.com" como exemplo de venda de links artificiais.</p>
+    <p><strong>Status:</strong> disavow de 22 domínios suspeitos enviado ao Google. Recuperação de ranking orgânico é o item de maior potencial de receita ainda em aberto — não é algo que se resolve da noite pro dia.</p>`
+  },
+  {
+    date: "2026-08-11", tag: "fix", tagLabel: "Ação",
+    title: "Disavow de 22 domínios de backlink tóxico enviado ao Google",
+    summary: "Arquivo de desautorização submetido via Search Console, cobrindo PBN e diretórios de spam.",
+    body: `<p>Com base no diagnóstico do colapso de autoridade, mapeamos 22 domínios com padrão de spam/PBN apontando pro site (spam score 50-75, a maioria com apenas 1 link, nomes genéricos e irrelevantes ao nicho).</p>
+    <p>O arquivo de disavow foi montado no formato exigido pelo Google (<code>domain:exemplo.com</code> por linha) e enviado via <a href="https://search.google.com/search-console/disavow-links" target="_blank">Disavow Tool</a>, na propriedade de prefixo de URL (a ferramenta não funciona em propriedades de domínio).</p>
+    <p><strong>Resultado do upload:</strong> 22 domínios aceitos, 0 rejeitados.</p>
+    <p><strong>Expectativa:</strong> efeito defensivo (parar de acumular desconfiança), processamento de dias a semanas pelo Google. Não é a alavanca que sozinha recupera a posição perdida.</p>`
+  },
+  {
+    date: "2026-08-11", tag: "tech", tagLabel: "Técnico",
+    title: "Chamado aberto com a Olist — Cloudflare bloqueando crawlers de SEO",
+    summary: "403 site-wide pra ferramentas de auditoria; Google não é afetado. E-mail enviado, retorno esperado até 16/08.",
+    body: `<p>Ao tentar auditar o site com ferramentas de SEO, recebemos 403 Forbidden em qualquer página, mesmo forjando o User-Agent do Googlebot — confirma bloqueio por fingerprint/IP do Bot Management do Cloudflare, não por checagem de User-Agent.</p>
+    <p><strong>Confirmado que não afeta o Google:</strong> a Inspeção de URL do Search Console mostra o Googlebot real acessando normalmente (ele está na lista de bots verificados do Cloudflare).</p>
+    <p><strong>Por que ainda importa:</strong> bloqueia ferramentas de auditoria contínua, e possivelmente crawlers de redes sociais (Pinterest Rich Pins, preview do WhatsApp/Facebook) — o Pinterest é canal orgânico ativo da loja.</p>
+    <p>Quem administra o Cloudflare da loja é a Olist Ecommerce. E-mail enviado no formato problema/impacto/solução/ganho, pedindo pra checarem Security → Bots e Security → Events no painel. Lembrete agendado pra 16/08/2026 pra conferir o retorno.</p>`
+  },
+  {
+    date: "2026-08-11", tag: "tech", tagLabel: "Técnico",
+    title: "Redirects corrigidos — 4 páginas órfãs por troca de menu não redirecionada",
+    summary: "O site trocou a estrutura de categorias há meses sem redirecionar as URLs antigas.",
+    body: `<p>Descoberta: as páginas <code>/mochilas</code>, <code>/mochilas-e-bolsas/mochilas</code>, <code>/mochila-infantil</code> e <code>/trocador-completo</code> não aparecem em nenhum lugar do menu atual do site — mas continuavam indexadas e recebendo clique, brigando à toa com as páginas novas (<code>/mochilas-de-maternidade</code>, <code>/linha-infantil/mochilas-infantis</code>, <code>/trocador-organizador/trocador-completo</code>).</p>
+    <ul>
+      <li><code>/mochilas</code> → <code>/mochilas-de-maternidade</code></li>
+      <li><code>/mochilas-e-bolsas/mochilas</code> → <code>/mochilas-de-maternidade</code></li>
+      <li><code>/mochila-infantil</code> → <code>/linha-infantil/mochilas-infantis</code></li>
+      <li><code>/trocador-completo</code> → <code>/trocador-organizador/trocador-completo</code></li>
+    </ul>
+    <p>CSV enviado pra importação em massa (Admin da Olist), preservando as 22 linhas de redirect já existentes — a documentação não deixava claro se a importação soma ou substitui, então optamos por reenviar a lista completa por segurança.</p>
+    <p><strong>Confirmado ao vivo:</strong> as 4 URLs retornam 301 pro destino certo.</p>`
+  },
+  {
+    date: "2026-08-11", tag: "fix", tagLabel: "Ação",
+    title: "Title e meta description corrigidos — mochilas-infantis e trocador-completo",
+    summary: "Descoberta de um campo não-documentado (parent_id) na API que resolve title/meta em URLs aninhadas.",
+    body: `<p>As páginas novas <code>/linha-infantil/mochilas-infantis</code> e <code>/trocador-organizador/trocador-completo</code> não mostravam o title/meta customizado — no caso da primeira, o <code>&lt;title&gt;</code> estava literalmente vazio ("- Yamys").</p>
+    <p><strong>Causa:</strong> a API de SEO da VNDA associa o title/meta de uma tag a um "Tag Pai" específico. Depois da reestruturação do menu, esse campo ficou apontando pro pai antigo (ou vazio), então o conteúdo só aparecia na URL plana (<code>/mochilas-infantis</code>, <code>/trocador-completo</code>), não na URL que o menu realmente usa.</p>
+    <p>Corrigido via <code>PUT /api/v2/seo_data/{id}</code> passando o campo <code>parent_id</code> com o ID numérico do pai correto (encontrado via <code>/api/v2/menus</code>). Confirmado ao vivo nas duas URLs, sem cache envolvido.</p>`
+  },
+  {
+    date: "2026-08-11", tag: "content", tagLabel: "Conteúdo",
+    title: "Texto complementar de SEO restaurado em mochilas-infantis",
+    summary: "Conteúdo bom já existia, só estava preso na tag antiga (mochila-infantil, singular).",
+    body: `<p>Descobrimos que a loja usa banners com posição no formato <code>{nome-da-tag}-seo</code> pra exibir um bloco de texto longo (H2/H3, markdown) no rodapé das páginas de categoria — reforço de SEO on-page.</p>
+    <p>O banner de mochila infantil ("Por que escolher uma mochila infantil colorida?") existia e era bom, mas sua posição apontava pra <code>mochila-infantil-seo</code> (tag antiga, singular) em vez de <code>mochilas-infantis-seo</code> (tag atual). Corrigido via <code>PUT /api/v2/banners/{id}</code>.</p>
+    <p><strong>Bug adicional encontrado:</strong> o campo de data de início (<code>start_at</code>) precisa estar preenchido, senão o banner fica invisível mesmo com posição certa — e esse campo não é gravável via API, só pelo painel admin.</p>`
+  },
+  {
+    date: "2026-08-11", tag: "content", tagLabel: "Conteúdo",
+    title: "Texto novo de SEO criado para bolsao-yamys",
+    summary: "“bolsa maternidade” tem 49.500 buscas/mês — quase 3× “mochila maternidade” — e não tinha nenhum conteúdo dedicado.",
+    body: `<p>Pesquisa de volume de busca (DataForSEO) revelou que "bolsa maternidade" (49.500 buscas/mês) tem quase 3× o volume de "mochila maternidade" (18.100) — e nenhuma página do site tratava desse termo. A tag correspondente (<code>bolsao-yamys</code>) não tinha nenhum banner de SEO complementar.</p>
+    <p>Texto novo criado com base nos produtos reais da linha (Bolsão Big Picolé/Chocolate/Mingau — veludo cotelê, 9 bolsos, bolso térmico, 22L, ~590g), incluindo uma seção que diferencia bolsa vs. mochila pra não haver canibalização entre as duas linhas.</p>
+    <p>Criado via <code>POST /api/v2/banners</code>. Confirmado ao vivo em <code>/bolsas-acessorios/bolsao-yamys</code>.</p>`
+  },
+  {
+    date: "2026-08-11", tag: "content", tagLabel: "Conteúdo",
+    title: "Ajustes de palavra-chave no texto de kits-enxovais",
+    summary: "“enter enxoval de bebê” (27,1K/mês) e “kit maternidade” (6,6K/mês) incorporados ao texto existente.",
+    body: `<p>O texto complementar de <code>/kits-enxovais</code> nunca usava a expressão "enxoval de bebê" — apesar de literalmente ser o nome da página — nem "kit maternidade". Dois ajustes pontuais (título/parágrafo de abertura e seção de promoção), preservando o restante do texto.</p>
+    <p>Atualizado via <code>PUT /api/v2/banners/172</code>. Confirmado ao vivo.</p>`
+  },
+  {
+    date: "2026-08-13", tag: "fix", tagLabel: "Fase 1",
+    title: "Cluster da lancheira térmica saneado — duplicação removida e páginas órfãs consolidadas",
+    summary: "Mesmo padrão de bug (páginas órfãs sem redirect) encontrado numa 3ª categoria; title/description duplicados entre 3 tags corrigidos.",
+    body: `<p><strong>O que encontramos:</strong> as tags <code>lancheiras</code>, <code>lancheira-termica</code> e <code>saquinho-termico</code> tinham title/description praticamente idênticos — Google não conseguia diferenciar as páginas. Além disso, a URL original que diagnosticamos no início (<code>/lancheiras/lancheira-termica</code>) estava órfã: o menu atual só usa <code>/linha-infantil/lancheiras</code>, que reúne lancheiras térmicas e saquinhos térmicos numa página só, sem nenhum override de SEO configurado (mesmo bug do <code>parent_id</code> ausente já visto em <code>mochilas-infantis</code> e <code>trocador-completo</code>).</p>
+    <p><strong>O que fizemos:</strong></p>
+    <ul>
+      <li>Title/description novos e únicos para <code>/linha-infantil/lancheiras</code>, focados no termo de maior volume do cluster ("lancheira térmica", 33,1K buscas/mês), via <code>PUT /api/v2/seo_data/13</code> com <code>parent_id: 409</code></li>
+      <li>Texto complementar de SEO criado do zero (banner novo, tag <code>lancheiras-seo</code>) — essa categoria nunca tinha tido um</li>
+      <li>Redirects 301 de <code>/lancheiras/lancheira-termica</code> e <code>/lancheira-termica</code> (órfãs, sem link no menu atual) para <code>/linha-infantil/lancheiras</code>, consolidando a autoridade que restou depois do disavow</li>
+    </ul>
+    <p><strong>Confirmado ao vivo:</strong> os 2 redirects retornam 301 correto, o title/meta novo aparece, e o texto complementar está publicado na página.</p>
+    <p>Isso fecha tecnicamente a recuperação do cluster — o próximo passo é acompanhar se a posição no Search Console melhora nas próximas semanas (efeito de SEO tem lag), e seguir para linkagem interna e dados estruturados.</p>`
+  }
+];
+
+function fmtBRL(v){ return "R$ " + v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0}); }
+function fmtBRLc(v){ return "R$ " + v.toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtNum(v){ return v.toLocaleString('pt-BR'); }
+function fmtPct(v){ return (v*100).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}) + '%'; }
+function parseD(s){ return new Date(s+"T00:00:00"); }
+
+function filterByDate(arr, from, to){
+  return arr.filter(r => r.date >= from && r.date <= to);
+}
+
+function sumField(arr, f){ return arr.reduce((a,r)=>a+r[f],0); }
+function weightedAvgPosition(arr){
+  let totalImpr = sumField(arr,'impressions');
+  if(!totalImpr) return 0;
+  return arr.reduce((a,r)=>a+r.position*r.impressions,0)/totalImpr;
+}
+
+function isoWeekKey(dateStr){
+  const monday = parseD(dateStr);
+  monday.setDate(monday.getDate()-((monday.getDay()+6)%7));
+  return monday.toISOString().slice(0,10);
+}
+
+function aggregate(arr, gran, valueFields, sumKeys, avgKeys){
+  const groups = {};
+  arr.forEach(r=>{
+    let key;
+    if(gran==='D') key = r.date;
+    else if(gran==='W') key = isoWeekKey(r.date);
+    else key = r.date.slice(0,7)+"-01";
+    if(!groups[key]) groups[key] = {date:key, _n:0, _impr:0};
+    const g = groups[key];
+    g._n++;
+    sumKeys.forEach(k=>{ g[k] = (g[k]||0) + (r[k]||0); });
+    if(avgKeys){
+      avgKeys.forEach(k=>{ g['_sum_'+k] = (g['_sum_'+k]||0) + (r[k]||0)*(r.impressions||1); });
+      g._impr += (r.impressions||0);
+    }
+  });
+  const out = Object.values(groups).sort((a,b)=>a.date.localeCompare(b.date));
+  if(avgKeys) out.forEach(g=>{ avgKeys.forEach(k=>{ g[k] = g._impr? g['_sum_'+k]/g._impr : 0; }); });
+  return out;
+}
+
+function labelFor(dateStr, gran){
+  const d = parseD(dateStr);
+  if(gran==='D') return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  if(gran==='W') return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+  return d.toLocaleDateString('pt-BR',{month:'short',year:'2-digit'}).replace('.','');
+}
+
+function svgEl(tag, attrs){
+  const e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for(const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+const MAX_POINTS = 30;
+
+function drawDualChart(svgId, data, barKey, lineKey, barFmt, lineFmt, invertLine, gran){
+  if(data.length > MAX_POINTS) data = data.slice(-MAX_POINTS);
+  const svg = document.getElementById(svgId);
+  svg.innerHTML = "";
+  const W = Math.max(640, data.length*64);
+  svg.setAttribute('viewBox', `0 0 ${W} 300`);
+  const padL=48,padR=48,padT=26,padB=34;
+  const chartW=W-padL-padR, chartH=300-padT-padB;
+  const maxBar = Math.max(...data.map(d=>d[barKey]),1)*1.1;
+  const lineVals = data.map(d=>d[lineKey]);
+  let minLine = Math.min(...lineVals), maxLine = Math.max(...lineVals);
+  if(minLine===maxLine){ minLine-=1; maxLine+=1; }
+  const pad = (maxLine-minLine)*0.15;
+  minLine-=pad; maxLine+=pad;
+
+  function yBar(v){ return padT+chartH-(v/maxBar)*chartH; }
+  function yLine(v){
+    let t = (v-minLine)/(maxLine-minLine);
+    if(invertLine) t = 1-t;
+    return padT+chartH-t*chartH;
+  }
+  [0,0.25,0.5,0.75,1].forEach(t=>{
+    const gy = padT+chartH*(1-t);
+    svg.appendChild(svgEl('line',{x1:padL,x2:W-padR,y1:gy,y2:gy,class:'grid-line'}));
+    const lbl = svgEl('text',{x:8,y:gy+3,class:'axis-label'});
+    lbl.textContent = barFmt(maxBar*t);
+    svg.appendChild(lbl);
+  });
+
+  const slot = chartW/data.length;
+  const barW = Math.min(gran==='M'?36:slot*0.55, slot*0.6);
+  // data is capped at MAX_POINTS with a generous fixed width per point, so every label always fits.
+  const labelStep = 1;
+  const showAllLabels = true;
+  const pts = [];
+  data.forEach((d,i)=>{
+    const cx = padL+slot*i+slot/2;
+    const x0 = cx-barW/2;
+    const by = yBar(d[barKey]);
+    svg.appendChild(svgEl('rect',{x:x0,y:by,width:barW,height:padT+chartH-by,fill:'var(--teal)',opacity:0.85,rx:2}));
+    pts.push([cx, yLine(d[lineKey])]);
+    const showThis = showAllLabels || i%labelStep===0;
+    if(showThis){
+      const t = svgEl('text',{x:cx,y:300-10,'text-anchor':'middle',class:'axis-label'});
+      t.textContent = labelFor(d.date,gran);
+      svg.appendChild(t);
+    }
+  });
+
+  let path = 'M'+pts.map(p=>p.join(',')).join(' L');
+  svg.appendChild(svgEl('path',{d:path,fill:'none',stroke:'var(--accent)','stroke-width':2.2}));
+  pts.forEach((p,i)=>{
+    svg.appendChild(svgEl('circle',{cx:p[0],cy:p[1],r:2.6,fill:'var(--accent)'}));
+  });
+
+  // value labels — bar (above bar top) and line (above point), thinned to avoid clutter,
+  // with a legibility backdrop and a forced minimum vertical gap between the two labels.
+  function addLabel(cx, cy, text, cls){
+    const w = Math.max(20, text.length*6.6+8);
+    svg.appendChild(svgEl('rect',{x:cx-w/2,y:cy-10,width:w,height:13,class:'val-label-bg',rx:3}));
+    const t = svgEl('text',{x:cx,y:cy,'text-anchor':'middle',class:cls});
+    t.textContent = text;
+    svg.appendChild(t);
+  }
+  const MIN_GAP = 15;
+  data.forEach((d,i)=>{
+    if(!(showAllLabels || i%labelStep===0)) return;
+    const cx = pts[i][0];
+    const by = yBar(d[barKey]);
+    const ly = pts[i][1];
+    let barLabelY = by-8;
+    const aboveBar = ly < by;
+    let lineLabelY = aboveBar ? ly-10 : ly-8;
+    if(Math.abs(barLabelY-lineLabelY) < MIN_GAP){
+      if(aboveBar) lineLabelY = barLabelY - MIN_GAP;
+      else barLabelY = lineLabelY - MIN_GAP;
+    }
+    addLabel(cx, barLabelY, barFmt(d[barKey]), 'val-label-bar');
+    addLabel(cx, lineLabelY, lineFmt(d[lineKey]), 'val-label-line');
+  });
+
+  [0,0.5,1].forEach(t=>{
+    const gy = padT+chartH*(1-t);
+    const val = invertLine ? minLine+(1-t)*(maxLine-minLine) : minLine+t*(maxLine-minLine);
+    const lbl = svgEl('text',{x:W-padR+6,y:gy+3,class:'axis-label'});
+    lbl.textContent = lineFmt(val);
+    svg.appendChild(lbl);
+  });
+}
+
+let currentGran = {revSessions:'M', gsc:'M'};
+
+function getRange(){
+  const from = document.getElementById('dateFrom').value;
+  const to = document.getElementById('dateTo').value;
+  return {from, to};
+}
+
+function render(){
+  const {from, to} = getRange();
+  const ga4F = filterByDate(ga4Daily, from, to);
+  const gscF = filterByDate(gscDaily, from, to);
+
+  const spanDays = (parseD(to)-parseD(from))/86400000+1;
+  const prevTo = new Date(parseD(from)); prevTo.setDate(prevTo.getDate()-1);
+  const prevFrom = new Date(prevTo); prevFrom.setDate(prevFrom.getDate()-spanDays+1);
+  const prevFromS = prevFrom.toISOString().slice(0,10), prevToS = prevTo.toISOString().slice(0,10);
+  const ga4Prev = filterByDate(ga4Daily, prevFromS, prevToS);
+  const gscPrev = filterByDate(gscDaily, prevFromS, prevToS);
+
+  const sessions = sumField(ga4F,'sessions'), sessionsPrev = sumField(ga4Prev,'sessions');
+  const revenue = sumField(ga4F,'revenue'), revenuePrev = sumField(ga4Prev,'revenue');
+  const clicks = sumField(gscF,'clicks'), clicksPrev = sumField(gscPrev,'clicks');
+  const impressions = sumField(gscF,'impressions'), imprPrev = sumField(gscPrev,'impressions');
+  const avgPos = weightedAvgPosition(gscF), avgPosPrev = weightedAvgPosition(gscPrev);
+
+  function delta(cur, prev, invert){
+    if(!prev) return {cls:'flat', txt:'sem período anterior'};
+    const d = ((cur-prev)/prev)*100;
+    const good = invert ? d<0 : d>0;
+    const cls = Math.abs(d)<1 ? 'flat' : (good?'pos':'neg');
+    return {cls, txt:(d>=0?'+':'')+d.toLocaleString('pt-BR',{maximumFractionDigits:1})+'% vs. período anterior'};
+  }
+
+  const kpis = [
+    {label:'Sessões orgânicas', value: fmtNum(sessions), d: delta(sessions,sessionsPrev)},
+    {label:'Receita orgânica', value: fmtBRL(revenue), d: delta(revenue,revenuePrev)},
+    {label:'Cliques (GSC)', value: fmtNum(clicks), d: delta(clicks,clicksPrev)},
+    {label:'Impressões (GSC)', value: fmtNum(impressions), d: delta(impressions,imprPrev)},
+    {label:'Posição média', value: avgPos.toFixed(1), d: delta(avgPos,avgPosPrev,true)},
+  ];
+  document.getElementById('kpiGrid').innerHTML = kpis.map(k=>`
+    <div class="kpi">
+      <div class="label">${k.label}</div>
+      <div class="value">${k.value}</div>
+      <div class="delta ${k.d.cls}">${k.d.txt}</div>
+    </div>`).join('');
+
+  // Goal card (always full August, independent of filter)
+  const monthData = filterByDate(ga4Daily, GOAL_MONTH_START, GOAL_END);
+  const realized = sumField(monthData,'revenue');
+  const lastDate = ga4Daily[ga4Daily.length-1].date;
+  const todayForGoal = lastDate < GOAL_END ? lastDate : GOAL_END;
+  const daysElapsed = (parseD(todayForGoal)-parseD(GOAL_MONTH_START))/86400000+1;
+  const daysTotal = (parseD(GOAL_END)-parseD(GOAL_MONTH_START))/86400000+1;
+  const daysLeft = daysTotal-daysElapsed;
+  const pctDone = Math.min(100, (realized/GOAL_AMOUNT)*100);
+  const currentDailyPace = realized/daysElapsed;
+  const projected = currentDailyPace*daysTotal;
+  const gap = GOAL_AMOUNT-realized;
+  const neededDailyPace = daysLeft>0 ? gap/daysLeft : 0;
+  const behind = projected < GOAL_AMOUNT*0.97;
+
+  document.getElementById('goalCard').innerHTML = `
+    <div class="goal-left">
+      <h3>Progresso — Agosto/26</h3>
+      <div class="goal-numbers">
+        <span class="big">${fmtBRL(realized)}</span>
+        <span class="of">de ${fmtBRL(GOAL_AMOUNT)}</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill ${behind?'behind':''}" style="width:${pctDone}%"></div></div>
+      <div class="pace-row"><span>${pctDone.toFixed(1)}% da meta</span><span>dia ${Math.round(daysElapsed)} de ${daysTotal}</span></div>
+    </div>
+    <div class="goal-right">
+      <div class="goal-stat"><span>Ritmo atual</span><b>${fmtBRLc(currentDailyPace)}/dia</b></div>
+      <div class="goal-stat"><span>Projeção no ritmo atual</span><b>${fmtBRL(projected)}</b></div>
+      <div class="goal-stat"><span>Falta</span><b>${fmtBRL(Math.max(0,gap))}</b></div>
+      <div class="goal-stat"><span>Ritmo necessário (${Math.round(daysLeft)} dias restantes)</span><b>${fmtBRLc(neededDailyPace)}/dia</b></div>
+      ${behind ? `<div class="goal-verdict">No ritmo atual, a meta não é atingida — seria preciso ${(neededDailyPace/Math.max(currentDailyPace,1)).toFixed(1)}× o ritmo de hoje.</div>` : `<div class="goal-verdict" style="background:var(--good-soft);color:var(--good)">No ritmo atual, a meta é atingida.</div>`}
+    </div>`;
+
+  drawRevSessions();
+  drawGsc();
+
+  document.getElementById('tblPages').querySelector('tbody').innerHTML = topPages.map(p=>`
+    <tr><td class="name">${p.page}</td><td>${fmtNum(p.clicks)}</td><td>${fmtNum(p.impressions)}</td><td>${fmtPct(p.ctr)}</td><td>${posPill(p.position)}</td></tr>`).join('');
+  document.getElementById('tblQueries').querySelector('tbody').innerHTML = topQueries.map(q=>`
+    <tr><td class="name">${q.query}</td><td>${fmtNum(q.clicks)}</td><td>${fmtNum(q.impressions)}</td><td>${posPill(q.position)}</td></tr>`).join('');
+
+  const maxSessions = Math.max(...channelBreakdown.map(c=>c.sessions));
+  document.getElementById('channelList').innerHTML = channelBreakdown.map(c=>`
+    <div class="channel-row">
+      <span class="name">${c.name}</span>
+      <span class="bar-track"><span class="bar-fill" style="width:${(c.sessions/maxSessions)*100}%"></span></span>
+      <span class="val">${fmtNum(c.sessions)} sessões</span>
+    </div>`).join('');
+}
+
+function drawRevSessions(){
+  const {from,to} = getRange();
+  const data = aggregate(filterByDate(ga4Daily,from,to), currentGran.revSessions, null, ['sessions','revenue']);
+  drawDualChart('chartRevSessions', data, 'revenue', 'sessions',
+    v=>'R$'+Math.round(v/1000)+'k', v=>Math.round(v), false, currentGran.revSessions);
+}
+function drawGsc(){
+  const {from,to} = getRange();
+  const data = aggregate(filterByDate(gscDaily,from,to), currentGran.gsc, null, ['clicks','impressions'], ['position']);
+  drawDualChart('chartGsc', data, 'clicks', 'position',
+    v=>Math.round(v), v=>v.toFixed(1), true, currentGran.gsc);
+}
+
+document.querySelectorAll('.toggle-group').forEach(tg=>{
+  tg.addEventListener('click', e=>{
+    const btn = e.target.closest('button'); if(!btn) return;
+    const chart = tg.dataset.chart;
+    currentGran[chart] = btn.dataset.gran;
+    tg.querySelectorAll('button').forEach(b=>b.classList.toggle('active', b===btn));
+    if(chart==='revSessions') drawRevSessions(); else drawGsc();
+  });
+});
+
+document.querySelectorAll('.tabnav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabnav button').forEach(b=>b.classList.toggle('active', b===btn));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.toggle('active', p.dataset.panel===btn.dataset.tab));
+  });
+});
+
+function posClass(p){ return p<=3 ? 'pos-good' : (p<=10 ? 'pos-mid' : 'pos-bad'); }
+function posPill(p){ return `<span class="pos-pill ${posClass(p)}">${p.toFixed(1)}</span>`; }
+
+document.getElementById('dateFrom').addEventListener('change', render);
+document.getElementById('dateTo').addEventListener('change', render);
+document.querySelectorAll('.presets .btn-chip').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.presets .btn-chip').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    const lastDate = ga4Daily[ga4Daily.length-1].date;
+    const firstDate = ga4Daily[0].date;
+    let from = firstDate;
+    if(b.dataset.range!=='all'){
+      const d = parseD(lastDate); d.setDate(d.getDate()-parseInt(b.dataset.range));
+      from = d.toISOString().slice(0,10);
+    }
+    document.getElementById('dateFrom').value = from;
+    document.getElementById('dateTo').value = lastDate;
+    render();
+  });
+});
+
+const statusLabel = {rank:"Rankeando", recovering:"Recuperando", gap:"Oportunidade"};
+const maxKwVol = Math.max(...keywordOpportunities.map(k=>k.vol));
+document.getElementById('tblOpportunities').querySelector('tbody').innerHTML = keywordOpportunities.map(k=>`
+  <tr>
+    <td class="name">${k.kw}</td>
+    <td><span class="vol-bar-track"><span class="vol-bar-fill" style="width:${(k.vol/maxKwVol)*100}%"></span></span>${fmtNum(k.vol)}</td>
+    <td>${k.comp}</td>
+    <td><span class="status-pill status-${k.status}">${statusLabel[k.status]}</span></td>
+  </tr>`).join('');
+
+const timelineEl = document.getElementById('timeline');
+timelineEl.innerHTML = revisions.map((r,i)=>`
+  <div class="tl-item">
+    <div class="tl-date">${parseD(r.date).toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}</div>
+    <button class="tl-title" data-idx="${i}">${r.title}</button>
+    <div class="tl-summary">${r.summary}</div>
+    <span class="tl-tag ${r.tag}">${r.tagLabel}</span>
+  </div>`).join('');
+
+const modalOverlay = document.getElementById('modalOverlay');
+timelineEl.querySelectorAll('.tl-title').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const r = revisions[btn.dataset.idx];
+    document.getElementById('modalTitle').textContent = r.title;
+    document.getElementById('modalDate').textContent = parseD(r.date).toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+    document.getElementById('modalBody').innerHTML = r.body;
+    modalOverlay.classList.add('open');
+  });
+});
+document.getElementById('modalClose').addEventListener('click', ()=>modalOverlay.classList.remove('open'));
+modalOverlay.addEventListener('click', e=>{ if(e.target===modalOverlay) modalOverlay.classList.remove('open'); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') modalOverlay.classList.remove('open'); });
+
+// init
+const lastDate = ga4Daily[ga4Daily.length-1].date;
+const firstDate = ga4Daily[0].date;
+document.getElementById('dateFrom').value = firstDate;
+document.getElementById('dateTo').value = lastDate;
+render();
+</script>
