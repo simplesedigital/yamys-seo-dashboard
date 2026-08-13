@@ -470,6 +470,7 @@ const GOAL_END = "2026-08-31";
 const GOAL_MONTH_START = "2026-08-01";
 
 const revisions = [
+
   {
     date: "2026-08-11", tag: "diag", tagLabel: "Diagnóstico",
     title: "Colapso do cluster “lancheira térmica” — causa raiz identificada",
@@ -556,6 +557,27 @@ const revisions = [
     </ul>
     <p><strong>Confirmado ao vivo:</strong> os 2 redirects retornam 301 correto, o title/meta novo aparece, e o texto complementar está publicado na página.</p>
     <p>Isso fecha tecnicamente a recuperação do cluster — o próximo passo é acompanhar se a posição no Search Console melhora nas próximas semanas (efeito de SEO tem lag), e seguir para linkagem interna e dados estruturados.</p>`
+  },
+  {
+    date: "2026-08-13", tag: "content", tagLabel: "Fase 0",
+    title: "Prova social real adicionada ao title/meta de 3 categorias",
+    summary: "Item pendente da Fase 0: reescrevemos título/descrição de mochilas-de-maternidade, trocador-completo e mochilas-infantis com números reais de avaliação (Trustvox), sem inventar dados.",
+    body: `<p><strong>O que fizemos:</strong> a auditoria da Fase 0 mostrou que os títulos/descriptions das 3 categorias já tinham foco em benefício, mas faltava prova social — o item explícito do plano.</p>
+    <p><strong>Como levantamos os números:</strong> em vez de estimar, checamos ao vivo (via navegador) o widget do Trustvox em produtos reais de cada categoria:</p>
+    <ul>
+      <li><strong>Mochilas de Maternidade:</strong> 126+ avaliações somadas em 4 dos 11 produtos (Gaivota, Sabiá, Mingau, Maçã), todas entre 94-100% — copy nova cita "+120 Avaliações" e "nota 4,8"</li>
+      <li><strong>Trocador Portátil:</strong> só 6 avaliações no total (linha ainda nova) — número pequeno demais pra destacar, então usamos linguagem qualitativa ("Aprovado por Mães")</li>
+      <li><strong>Mochilas Infantis:</strong> 17 avaliações, 76-100% (mais misto) — copy usa "Aprovada por Famílias", sem número específico</li>
+    </ul>
+    <p>Atualizado via <code>PUT /api/v2/seo_data</code> (ids 39, 12, 46) e confirmado ao vivo nas 3 URLs.</p>`
+  },
+  {
+    date: "2026-08-13", tag: "diag", tagLabel: "Fase 1",
+    title: "Schema de avaliação (Review/AggregateRating) ausente — confirmado e escalado à VNDA",
+    summary: "Produtos têm JSON-LD de Product/Offer/Brand, mas nenhum tem aggregateRating; Trustvox confirma que a marcação depende de configuração da plataforma. E-mail técnico enviado ao time de front da VNDA.",
+    body: `<p><strong>O que a auditoria da Fase 1 encontrou:</strong> páginas de produto têm schema.org <code>Product/Offer/Brand/BreadcrumbList</code>, mas nenhuma tem <code>aggregateRating</code>/<code>review</code> — mesmo com o widget de estrelas do Trustvox funcionando visualmente. Páginas de categoria não têm nenhum schema.</p>
+    <p><strong>Investigação:</strong> confirmamos na documentação oficial do Trustvox que eles fornecem esse markup (Microdata e Json+LD), mas que "essas marcações podem variar de acordo com a plataforma de e-commerce" e precisam de configuração específica — hoje não está ativo na integração com a VNDA.</p>
+    <p><strong>Ação tomada:</strong> e-mail técnico enviado ao time de front-end/desenvolvimento da VNDA, pedindo a implementação do campo <code>aggregateRating</code> no JSON-LD de produto (usando dados reais do Trustvox) e um schema básico de categoria. Aguardando retorno.</p>`
   }
 ];
 
