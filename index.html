@@ -216,7 +216,8 @@
       <button class="btn-chip" data-range="30">30 dias</button>
       <button class="btn-chip" data-range="90">90 dias</button>
       <button class="btn-chip" data-range="180">6 meses</button>
-      <button class="btn-chip active" data-range="all">Tudo</button>
+      <button class="btn-chip active" data-range="month">Mês Atual</button>
+      <button class="btn-chip" data-range="all">Tudo</button>
     </div>
   </div>
   <div class="section-note" style="margin:-14px 0 20px;">↑ Filtra os KPIs e os 2 gráficos desta aba. As outras abas mostram períodos fixos (indicados em cada seção) e não respondem a este filtro.</div>
@@ -248,9 +249,9 @@
           <span><span class="sw" style="background:var(--accent)"></span>Sessões</span>
         </div>
         <div class="toggle-group" data-chart="revSessions">
-          <button data-gran="D">Dia</button>
+          <button data-gran="D" class="active">Dia</button>
           <button data-gran="W">Semana</button>
-          <button data-gran="M" class="active">Mês</button>
+          <button data-gran="M">Mês</button>
         </div>
       </div>
       <div class="chart-scroll"><svg class="chart" id="chartRevSessions" viewBox="0 0 1120 300"></svg></div>
@@ -269,9 +270,9 @@
           <span><span class="sw" style="background:var(--accent)"></span>Posição média (invertida — pra cima é melhor)</span>
         </div>
         <div class="toggle-group" data-chart="gsc">
-          <button data-gran="D">Dia</button>
+          <button data-gran="D" class="active">Dia</button>
           <button data-gran="W">Semana</button>
-          <button data-gran="M" class="active">Mês</button>
+          <button data-gran="M">Mês</button>
         </div>
       </div>
       <div class="chart-scroll"><svg class="chart" id="chartGsc" viewBox="0 0 1120 300"></svg></div>
@@ -740,7 +741,7 @@ function drawDualChart(svgId, data, barKey, lineKey, barFmt, lineFmt, invertLine
   });
 }
 
-let currentGran = {revSessions:'M', gsc:'M'};
+let currentGran = {revSessions:'D', gsc:'D'};
 
 function getRange(){
   const from = document.getElementById('dateFrom').value;
@@ -880,7 +881,10 @@ document.querySelectorAll('.presets .btn-chip').forEach(b=>{
     const lastDate = ga4Daily[ga4Daily.length-1].date;
     const firstDate = ga4Daily[0].date;
     let from = firstDate;
-    if(b.dataset.range!=='all'){
+    if(b.dataset.range==='month'){
+      const d = parseD(lastDate);
+      from = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
+    } else if(b.dataset.range!=='all'){
       const d = parseD(lastDate); d.setDate(d.getDate()-parseInt(b.dataset.range));
       from = d.toISOString().slice(0,10);
     }
@@ -926,7 +930,9 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') modalOverlay.clas
 // init
 const lastDate = ga4Daily[ga4Daily.length-1].date;
 const firstDate = ga4Daily[0].date;
-document.getElementById('dateFrom').value = firstDate;
+const lastD = parseD(lastDate);
+const monthStart = `${lastD.getFullYear()}-${String(lastD.getMonth()+1).padStart(2,'0')}-01`;
+document.getElementById('dateFrom').value = monthStart;
 document.getElementById('dateTo').value = lastDate;
 render();
 </script>
