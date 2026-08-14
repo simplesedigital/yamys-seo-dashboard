@@ -122,7 +122,7 @@
   .channel-row .name { width:90px; color:var(--ink); font-weight:500; }
   .channel-row .bar-track { flex:1; height:8px; background:var(--surface-3); border-radius:4px; overflow:hidden; }
   .channel-row .bar-fill { height:100%; background:var(--teal); }
-  .channel-row .val { width:70px; text-align:right; font-variant-numeric:tabular-nums; color:var(--ink-soft); }
+  .channel-row .val { width:100px; text-align:right; font-variant-numeric:tabular-nums; color:var(--ink-soft); }
 
   .timeline { position:relative; padding-left:22px; }
   .timeline::before { content:""; position:absolute; left:5px; top:4px; bottom:4px; width:1px; background:var(--line); }
@@ -830,13 +830,16 @@ function render(){
   document.getElementById('tblQueries').querySelector('tbody').innerHTML = topQueries.map(q=>`
     <tr><td class="name">${q.query}</td><td>${fmtNum(q.clicks)}</td><td>${fmtNum(q.impressions)}</td><td>${posPill(q.position)}</td></tr>`).join('');
 
-  const maxSessions = Math.max(...channelBreakdown.map(c=>c.sessions));
-  document.getElementById('channelList').innerHTML = channelBreakdown.map(c=>`
+  const totalSessions = channelBreakdown.reduce((sum,c)=>sum+c.sessions,0);
+  document.getElementById('channelList').innerHTML = channelBreakdown.map(c=>{
+    const pct = (c.sessions/totalSessions)*100;
+    return `
     <div class="channel-row">
       <span class="name">${c.name}</span>
-      <span class="bar-track"><span class="bar-fill" style="width:${(c.sessions/maxSessions)*100}%"></span></span>
-      <span class="val">${fmtNum(c.sessions)} sessões</span>
-    </div>`).join('');
+      <span class="bar-track"><span class="bar-fill" style="width:${pct}%"></span></span>
+      <span class="val">${fmtNum(c.sessions)} · ${pct.toFixed(1)}%</span>
+    </div>`;
+  }).join('');
 }
 
 function drawRevSessions(){
