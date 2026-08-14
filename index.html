@@ -474,124 +474,126 @@ const GOAL_END = "2026-08-31";
 const GOAL_MONTH_START = "2026-08-01";
 
 const revisions = [
-
-
   {
     date: "2026-08-11", tag: "diag", tagLabel: "Diagnóstico",
     title: "Colapso do cluster “lancheira térmica” — causa raiz identificada",
     summary: "Perda de autoridade de domínio em março/26 (não é problema técnico nem de conteúdo).",
     body: `<p><strong>O que investigamos:</strong> por que "lancheira térmica" e termos correlatos caíram de posição 8 pra 22-39, perdendo 99,8% das impressões (41.450 → 63/mês).</p>
-    <p><strong>O que achamos:</strong> entre 1–8 de março/26, o domínio perdeu ~110 backlinks de uma vez (154 → 44 links totais). O "rank" de autoridade do domínio (DataForSEO) despencou de 149 para 7 no mesmo período. A queda de posição no Google aconteceu ~3 semanas depois — prazo típico de propagação.</p>
-    <p><strong>Por que sabemos que é autoridade, não técnico:</strong> termos de marca (yamys, yamis...) continuaram em #1-2 o tempo todo. Só os termos genéricos competitivos (que brigam com Samsonite, Bagaggio, Thermos) desabaram. A indexação da página foi confirmada normal via Search Console.</p>
-    <p><strong>Evidência de spam:</strong> encontramos um backlink recente vindo de um site cujo título era literalmente "Boost your Google rankings with Premium PBN & Link Building", usando "yamysbaby.com" como exemplo de venda de links artificiais.</p>
-    <p><strong>Status:</strong> disavow de 22 domínios suspeitos enviado ao Google. Recuperação de ranking orgânico é o item de maior potencial de receita ainda em aberto — não é algo que se resolve da noite pro dia.</p>`
+    <p><strong>O que encontramos:</strong> entre 1–8 de março/26, o domínio perdeu ~110 backlinks de uma vez (154 → 44 links totais). O "rank" de autoridade do domínio (DataForSEO) despencou de 149 para 7 no mesmo período. A queda de posição no Google aconteceu ~3 semanas depois — prazo típico de propagação. Termos de marca (yamys, yamis...) continuaram em #1-2 o tempo todo — só os termos genéricos competitivos (que brigam com Samsonite, Bagaggio, Thermos) desabaram, o que confirma autoridade, não técnico ou conteúdo. Encontramos ainda um backlink recente vindo de um site vendendo links artificiais, usando "yamysbaby.com" como exemplo.</p>
+    <p><strong>Status:</strong> disavow de 22 domínios suspeitos enviado ao Google (ver próxima entrada). Recuperação de ranking orgânico é o item de maior potencial de receita ainda em aberto — não é algo que se resolve da noite pro dia.</p>`
   },
   {
     date: "2026-08-11", tag: "fix", tagLabel: "Ação",
     title: "Disavow de 22 domínios de backlink tóxico enviado ao Google",
     summary: "Arquivo de desautorização submetido via Search Console, cobrindo PBN e diretórios de spam.",
-    body: `<p>Com base no diagnóstico do colapso de autoridade, mapeamos 22 domínios com padrão de spam/PBN apontando pro site (spam score 50-75, a maioria com apenas 1 link, nomes genéricos e irrelevantes ao nicho).</p>
-    <p>O arquivo de disavow foi montado no formato exigido pelo Google (<code>domain:exemplo.com</code> por linha) e enviado via <a href="https://search.google.com/search-console/disavow-links" target="_blank">Disavow Tool</a>, na propriedade de prefixo de URL (a ferramenta não funciona em propriedades de domínio).</p>
-    <p><strong>Resultado do upload:</strong> 22 domínios aceitos, 0 rejeitados.</p>
-    <p><strong>Expectativa:</strong> efeito defensivo (parar de acumular desconfiança), processamento de dias a semanas pelo Google. Não é a alavanca que sozinha recupera a posição perdida.</p>`
+    body: `<p><strong>O que fizemos:</strong> mapeamos 22 domínios com padrão de spam/PBN apontando pro site (spam score 50-75, a maioria com apenas 1 link, nomes genéricos e irrelevantes ao nicho) e montamos o arquivo de disavow no formato exigido pelo Google (<code>domain:exemplo.com</code> por linha), enviado via <a href="https://search.google.com/search-console/disavow-links" target="_blank">Disavow Tool</a> na propriedade de prefixo de URL (a ferramenta não funciona em propriedades de domínio).</p>
+    <p><strong>Resultado:</strong> 22 domínios aceitos, 0 rejeitados. Efeito é defensivo (parar de acumular desconfiança) e leva de dias a semanas pra ser processado pelo Google — não é a alavanca que sozinha recupera a posição perdida.</p>`
   },
   {
     date: "2026-08-11", tag: "tech", tagLabel: "Técnico",
     title: "Chamado aberto com a Olist — Cloudflare bloqueando crawlers de SEO",
     summary: "403 site-wide pra ferramentas de auditoria; Google não é afetado. E-mail enviado, retorno esperado até 16/08.",
-    body: `<p>Ao tentar auditar o site com ferramentas de SEO, recebemos 403 Forbidden em qualquer página, mesmo forjando o User-Agent do Googlebot — confirma bloqueio por fingerprint/IP do Bot Management do Cloudflare, não por checagem de User-Agent.</p>
-    <p><strong>Confirmado que não afeta o Google:</strong> a Inspeção de URL do Search Console mostra o Googlebot real acessando normalmente (ele está na lista de bots verificados do Cloudflare).</p>
-    <p><strong>Por que ainda importa:</strong> bloqueia ferramentas de auditoria contínua, e possivelmente crawlers de redes sociais (Pinterest Rich Pins, preview do WhatsApp/Facebook) — o Pinterest é canal orgânico ativo da loja.</p>
-    <p>Quem administra o Cloudflare da loja é a Olist Ecommerce. E-mail enviado no formato problema/impacto/solução/ganho, pedindo pra checarem Security → Bots e Security → Events no painel. Lembrete agendado pra 16/08/2026 pra conferir o retorno.</p>`
+    body: `<p><strong>O que encontramos:</strong> ao tentar auditar o site com ferramentas de SEO, qualquer página retornava 403 Forbidden, mesmo forjando o User-Agent do Googlebot — confirma bloqueio por fingerprint/IP do Bot Management do Cloudflare, não checagem de User-Agent. A Inspeção de URL do Search Console mostrou o Googlebot real acessando normalmente (está na lista de bots verificados do Cloudflare), então o Google não é afetado — mas o bloqueio atinge ferramentas de auditoria contínua e possivelmente crawlers de redes sociais (Pinterest Rich Pins, preview do WhatsApp/Facebook), canal orgânico ativo da loja.</p>
+    <p><strong>O que fizemos:</strong> e-mail enviado à Olist Ecommerce (administra o Cloudflare da loja) no formato problema/impacto/solução/ganho, pedindo pra checarem Security → Bots e Security → Events no painel.</p>
+    <p><strong>Status:</strong> retorno esperado até 16/08/2026 — resolvido em 14/08 (ver entrada mais recente).</p>`
   },
   {
     date: "2026-08-11", tag: "tech", tagLabel: "Técnico",
     title: "Redirects corrigidos — 4 páginas órfãs por troca de menu não redirecionada",
     summary: "O site trocou a estrutura de categorias há meses sem redirecionar as URLs antigas.",
-    body: `<p>Descoberta: as páginas <code>/mochilas</code>, <code>/mochilas-e-bolsas/mochilas</code>, <code>/mochila-infantil</code> e <code>/trocador-completo</code> não aparecem em nenhum lugar do menu atual do site — mas continuavam indexadas e recebendo clique, brigando à toa com as páginas novas (<code>/mochilas-de-maternidade</code>, <code>/linha-infantil/mochilas-infantis</code>, <code>/trocador-organizador/trocador-completo</code>).</p>
+    body: `<p><strong>O que encontramos:</strong> as páginas <code>/mochilas</code>, <code>/mochilas-e-bolsas/mochilas</code>, <code>/mochila-infantil</code> e <code>/trocador-completo</code> não apareciam em nenhum lugar do menu atual do site, mas continuavam indexadas e recebendo clique, brigando à toa com as páginas novas (<code>/mochilas-de-maternidade</code>, <code>/linha-infantil/mochilas-infantis</code>, <code>/trocador-organizador/trocador-completo</code>).</p>
+    <p><strong>O que fizemos:</strong> configuramos 4 redirects 301:</p>
     <ul>
       <li><code>/mochilas</code> → <code>/mochilas-de-maternidade</code></li>
       <li><code>/mochilas-e-bolsas/mochilas</code> → <code>/mochilas-de-maternidade</code></li>
       <li><code>/mochila-infantil</code> → <code>/linha-infantil/mochilas-infantis</code></li>
       <li><code>/trocador-completo</code> → <code>/trocador-organizador/trocador-completo</code></li>
     </ul>
-    <p>CSV enviado pra importação em massa (Admin da Olist), preservando as 22 linhas de redirect já existentes — a documentação não deixava claro se a importação soma ou substitui, então optamos por reenviar a lista completa por segurança.</p>
-    <p><strong>Confirmado ao vivo:</strong> as 4 URLs retornam 301 pro destino certo.</p>`
+    <p>CSV enviado pra importação em massa (Admin da Olist), preservando as 22 linhas de redirect já existentes.</p>
+    <p><strong>Resultado:</strong> confirmado ao vivo — as 4 URLs retornam 301 pro destino certo.</p>`
   },
   {
     date: "2026-08-11", tag: "fix", tagLabel: "Ação",
     title: "Title e meta description corrigidos — mochilas-infantis e trocador-completo",
     summary: "Descoberta de um campo não-documentado (parent_id) na API que resolve title/meta em URLs aninhadas.",
-    body: `<p>As páginas novas <code>/linha-infantil/mochilas-infantis</code> e <code>/trocador-organizador/trocador-completo</code> não mostravam o title/meta customizado — no caso da primeira, o <code>&lt;title&gt;</code> estava literalmente vazio ("- Yamys").</p>
-    <p><strong>Causa:</strong> a API de SEO da VNDA associa o title/meta de uma tag a um "Tag Pai" específico. Depois da reestruturação do menu, esse campo ficou apontando pro pai antigo (ou vazio), então o conteúdo só aparecia na URL plana (<code>/mochilas-infantis</code>, <code>/trocador-completo</code>), não na URL que o menu realmente usa.</p>
-    <p>Corrigido via <code>PUT /api/v2/seo_data/{id}</code> passando o campo <code>parent_id</code> com o ID numérico do pai correto (encontrado via <code>/api/v2/menus</code>). Confirmado ao vivo nas duas URLs, sem cache envolvido.</p>`
+    body: `<p><strong>O que encontramos:</strong> as páginas novas <code>/linha-infantil/mochilas-infantis</code> e <code>/trocador-organizador/trocador-completo</code> não mostravam o title/meta customizado — no caso da primeira, o <code>&lt;title&gt;</code> estava literalmente vazio ("- Yamys"). Causa: a API de SEO da VNDA associa o title/meta de uma tag a um "Tag Pai" específico, e depois da reestruturação do menu esse campo ficou apontando pro pai antigo (ou vazio) — o conteúdo só aparecia na URL plana (<code>/mochilas-infantis</code>, <code>/trocador-completo</code>), não na URL que o menu realmente usa.</p>
+    <p><strong>O que fizemos:</strong> corrigido via <code>PUT /api/v2/seo_data/{id}</code> passando o campo <code>parent_id</code> com o ID numérico do pai correto (encontrado via <code>/api/v2/menus</code>).</p>
+    <p><strong>Resultado:</strong> confirmado ao vivo nas duas URLs, sem cache envolvido.</p>`
   },
   {
     date: "2026-08-11", tag: "content", tagLabel: "Conteúdo",
     title: "Texto complementar de SEO restaurado em mochilas-infantis",
     summary: "Conteúdo bom já existia, só estava preso na tag antiga (mochila-infantil, singular).",
-    body: `<p>Descobrimos que a loja usa banners com posição no formato <code>{nome-da-tag}-seo</code> pra exibir um bloco de texto longo (H2/H3, markdown) no rodapé das páginas de categoria — reforço de SEO on-page.</p>
-    <p>O banner de mochila infantil ("Por que escolher uma mochila infantil colorida?") existia e era bom, mas sua posição apontava pra <code>mochila-infantil-seo</code> (tag antiga, singular) em vez de <code>mochilas-infantis-seo</code> (tag atual). Corrigido via <code>PUT /api/v2/banners/{id}</code>.</p>
-    <p><strong>Bug adicional encontrado:</strong> o campo de data de início (<code>start_at</code>) precisa estar preenchido, senão o banner fica invisível mesmo com posição certa — e esse campo não é gravável via API, só pelo painel admin.</p>`
+    body: `<p><strong>O que encontramos:</strong> a loja usa banners com posição no formato <code>{nome-da-tag}-seo</code> pra exibir um bloco de texto longo (H2/H3, markdown) no rodapé das páginas de categoria — reforço de SEO on-page. O banner de mochila infantil ("Por que escolher uma mochila infantil colorida?") existia e era bom, mas sua posição apontava pra <code>mochila-infantil-seo</code> (tag antiga, singular) em vez de <code>mochilas-infantis-seo</code> (tag atual).</p>
+    <p><strong>O que fizemos:</strong> corrigido via <code>PUT /api/v2/banners/{id}</code>.</p>
+    <p><strong>Resultado:</strong> confirmado ao vivo. Bug adicional encontrado no processo: o campo de data de início (<code>start_at</code>) precisa estar preenchido, senão o banner fica invisível mesmo com posição certa — e esse campo não é gravável via API, só pelo painel admin.</p>`
   },
   {
     date: "2026-08-11", tag: "content", tagLabel: "Conteúdo",
     title: "Texto novo de SEO criado para bolsao-yamys",
     summary: "“bolsa maternidade” tem 49.500 buscas/mês — quase 3× “mochila maternidade” — e não tinha nenhum conteúdo dedicado.",
-    body: `<p>Pesquisa de volume de busca (DataForSEO) revelou que "bolsa maternidade" (49.500 buscas/mês) tem quase 3× o volume de "mochila maternidade" (18.100) — e nenhuma página do site tratava desse termo. A tag correspondente (<code>bolsao-yamys</code>) não tinha nenhum banner de SEO complementar.</p>
-    <p>Texto novo criado com base nos produtos reais da linha (Bolsão Big Picolé/Chocolate/Mingau — veludo cotelê, 9 bolsos, bolso térmico, 22L, ~590g), incluindo uma seção que diferencia bolsa vs. mochila pra não haver canibalização entre as duas linhas.</p>
-    <p>Criado via <code>POST /api/v2/banners</code>. Confirmado ao vivo em <code>/bolsas-acessorios/bolsao-yamys</code>.</p>`
+    body: `<p><strong>O que encontramos:</strong> pesquisa de volume de busca (DataForSEO) revelou que "bolsa maternidade" (49.500 buscas/mês) tem quase 3× o volume de "mochila maternidade" (18.100) — e nenhuma página do site tratava desse termo. A tag correspondente (<code>bolsao-yamys</code>) não tinha nenhum banner de SEO complementar.</p>
+    <p><strong>O que fizemos:</strong> texto novo criado com base nos produtos reais da linha (Bolsão Big Picolé/Chocolate/Mingau — veludo cotelê, 9 bolsos, bolso térmico, 22L, ~590g), incluindo uma seção que diferencia bolsa vs. mochila pra não haver canibalização entre as duas linhas. Criado via <code>POST /api/v2/banners</code>.</p>
+    <p><strong>Resultado:</strong> confirmado ao vivo em <code>/bolsas-acessorios/bolsao-yamys</code>.</p>`
   },
   {
     date: "2026-08-11", tag: "content", tagLabel: "Conteúdo",
     title: "Ajustes de palavra-chave no texto de kits-enxovais",
-    summary: "“enter enxoval de bebê” (27,1K/mês) e “kit maternidade” (6,6K/mês) incorporados ao texto existente.",
-    body: `<p>O texto complementar de <code>/kits-enxovais</code> nunca usava a expressão "enxoval de bebê" — apesar de literalmente ser o nome da página — nem "kit maternidade". Dois ajustes pontuais (título/parágrafo de abertura e seção de promoção), preservando o restante do texto.</p>
-    <p>Atualizado via <code>PUT /api/v2/banners/172</code>. Confirmado ao vivo.</p>`
+    summary: "“enxoval de bebê” (27,1K/mês) e “kit maternidade” (6,6K/mês) incorporados ao texto existente.",
+    body: `<p><strong>O que encontramos:</strong> o texto complementar de <code>/kits-enxovais</code> nunca usava a expressão "enxoval de bebê" — apesar de literalmente ser o nome da página — nem "kit maternidade".</p>
+    <p><strong>O que fizemos:</strong> dois ajustes pontuais (título/parágrafo de abertura e seção de promoção), preservando o restante do texto. Atualizado via <code>PUT /api/v2/banners/172</code>.</p>
+    <p><strong>Resultado:</strong> confirmado ao vivo.</p>`
   },
   {
-    date: "2026-08-13", tag: "fix", tagLabel: "Fase 1",
+    date: "2026-08-13", tag: "fix", tagLabel: "Ação",
     title: "Cluster da lancheira térmica saneado — duplicação removida e páginas órfãs consolidadas",
     summary: "Mesmo padrão de bug (páginas órfãs sem redirect) encontrado numa 3ª categoria; title/description duplicados entre 3 tags corrigidos.",
-    body: `<p><strong>O que encontramos:</strong> as tags <code>lancheiras</code>, <code>lancheira-termica</code> e <code>saquinho-termico</code> tinham title/description praticamente idênticos — Google não conseguia diferenciar as páginas. Além disso, a URL original que diagnosticamos no início (<code>/lancheiras/lancheira-termica</code>) estava órfã: o menu atual só usa <code>/linha-infantil/lancheiras</code>, que reúne lancheiras térmicas e saquinhos térmicos numa página só, sem nenhum override de SEO configurado (mesmo bug do <code>parent_id</code> ausente já visto em <code>mochilas-infantis</code> e <code>trocador-completo</code>).</p>
+    body: `<p><strong>O que encontramos:</strong> as tags <code>lancheiras</code>, <code>lancheira-termica</code> e <code>saquinho-termico</code> tinham title/description praticamente idênticos — Google não conseguia diferenciar as páginas. Além disso, a URL original diagnosticada no início do trabalho (<code>/lancheiras/lancheira-termica</code>) estava órfã: o menu atual só usa <code>/linha-infantil/lancheiras</code>, que reúne lancheiras térmicas e saquinhos térmicos numa página só, sem nenhum override de SEO configurado — mesmo bug do <code>parent_id</code> ausente já visto em mochilas-infantis e trocador-completo.</p>
     <p><strong>O que fizemos:</strong></p>
     <ul>
       <li>Title/description novos e únicos para <code>/linha-infantil/lancheiras</code>, focados no termo de maior volume do cluster ("lancheira térmica", 33,1K buscas/mês), via <code>PUT /api/v2/seo_data/13</code> com <code>parent_id: 409</code></li>
       <li>Texto complementar de SEO criado do zero (banner novo, tag <code>lancheiras-seo</code>) — essa categoria nunca tinha tido um</li>
       <li>Redirects 301 de <code>/lancheiras/lancheira-termica</code> e <code>/lancheira-termica</code> (órfãs, sem link no menu atual) para <code>/linha-infantil/lancheiras</code>, consolidando a autoridade que restou depois do disavow</li>
     </ul>
-    <p><strong>Confirmado ao vivo:</strong> os 2 redirects retornam 301 correto, o title/meta novo aparece, e o texto complementar está publicado na página.</p>
-    <p>Isso fecha tecnicamente a recuperação do cluster — o próximo passo é acompanhar se a posição no Search Console melhora nas próximas semanas (efeito de SEO tem lag), e seguir para linkagem interna e dados estruturados.</p>`
+    <p><strong>Resultado:</strong> confirmado ao vivo — os 2 redirects retornam 301 correto, o title/meta novo aparece, e o texto complementar está publicado. Isso fecha tecnicamente a recuperação do cluster (item da Fase 1 do plano de SEO) — próximo passo é acompanhar se a posição no Search Console melhora nas próximas semanas (efeito de SEO tem lag).</p>`
   },
   {
-    date: "2026-08-13", tag: "content", tagLabel: "Fase 0",
+    date: "2026-08-13", tag: "content", tagLabel: "Conteúdo",
     title: "Prova social real adicionada ao title/meta de 3 categorias",
-    summary: "Item pendente da Fase 0: reescrevemos título/descrição de mochilas-de-maternidade, trocador-completo e mochilas-infantis com números reais de avaliação (Trustvox), sem inventar dados.",
-    body: `<p><strong>O que fizemos:</strong> a auditoria da Fase 0 mostrou que os títulos/descriptions das 3 categorias já tinham foco em benefício, mas faltava prova social — o item explícito do plano.</p>
-    <p><strong>Como levantamos os números:</strong> em vez de estimar, checamos ao vivo (via navegador) o widget do Trustvox em produtos reais de cada categoria:</p>
+    summary: "Reescrevemos título/descrição de mochilas-de-maternidade, trocador-completo e mochilas-infantis com números reais de avaliação (Trustvox), sem inventar dados.",
+    body: `<p><strong>O que encontramos:</strong> a auditoria da Fase 0 do plano de SEO mostrou que os títulos/descriptions das 3 categorias já tinham foco em benefício, mas faltava prova social — item explícito do plano.</p>
+    <p><strong>O que fizemos:</strong> em vez de estimar, checamos ao vivo (via navegador) o widget do Trustvox em produtos reais de cada categoria:</p>
     <ul>
       <li><strong>Mochilas de Maternidade:</strong> 126+ avaliações somadas em 4 dos 11 produtos (Gaivota, Sabiá, Mingau, Maçã), todas entre 94-100% — copy nova cita "+120 Avaliações" e "nota 4,8"</li>
       <li><strong>Trocador Portátil:</strong> só 6 avaliações no total (linha ainda nova) — número pequeno demais pra destacar, então usamos linguagem qualitativa ("Aprovado por Mães")</li>
       <li><strong>Mochilas Infantis:</strong> 17 avaliações, 76-100% (mais misto) — copy usa "Aprovada por Famílias", sem número específico</li>
     </ul>
-    <p>Atualizado via <code>PUT /api/v2/seo_data</code> (ids 39, 12, 46) e confirmado ao vivo nas 3 URLs.</p>`
+    <p><strong>Resultado:</strong> atualizado via <code>PUT /api/v2/seo_data</code> (ids 39, 12, 46) e confirmado ao vivo nas 3 URLs.</p>`
   },
   {
-    date: "2026-08-13", tag: "diag", tagLabel: "Fase 1",
+    date: "2026-08-13", tag: "diag", tagLabel: "Diagnóstico",
     title: "Schema de avaliação (Review/AggregateRating) ausente — confirmado e escalado à VNDA",
     summary: "Produtos têm JSON-LD de Product/Offer/Brand, mas nenhum tem aggregateRating; Trustvox confirma que a marcação depende de configuração da plataforma. E-mail técnico enviado ao time de front da VNDA.",
-    body: `<p><strong>O que a auditoria da Fase 1 encontrou:</strong> páginas de produto têm schema.org <code>Product/Offer/Brand/BreadcrumbList</code>, mas nenhuma tem <code>aggregateRating</code>/<code>review</code> — mesmo com o widget de estrelas do Trustvox funcionando visualmente. Páginas de categoria não têm nenhum schema.</p>
-    <p><strong>Investigação:</strong> confirmamos na documentação oficial do Trustvox que eles fornecem esse markup (Microdata e Json+LD), mas que "essas marcações podem variar de acordo com a plataforma de e-commerce" e precisam de configuração específica — hoje não está ativo na integração com a VNDA.</p>
-    <p><strong>Ação tomada:</strong> e-mail técnico enviado ao time de front-end/desenvolvimento da VNDA, pedindo a implementação do campo <code>aggregateRating</code> no JSON-LD de produto (usando dados reais do Trustvox) e um schema básico de categoria. Aguardando retorno.</p>`
+    body: `<p><strong>O que investigamos:</strong> se as páginas de produto têm marcação de avaliação (schema.org <code>aggregateRating</code>/<code>review</code>) no JSON-LD — item da Fase 1 do plano de SEO, relevante pra habilitar estrelas (Rich Snippets) no resultado de busca.</p>
+    <p><strong>O que encontramos:</strong> páginas de produto têm schema.org <code>Product/Offer/Brand/BreadcrumbList</code>, mas nenhuma tem <code>aggregateRating</code>/<code>review</code> — mesmo com o widget de estrelas do Trustvox funcionando visualmente. Páginas de categoria não têm nenhum schema. Confirmamos na documentação oficial do Trustvox que eles fornecem esse markup (Microdata e Json+LD), mas que "essas marcações podem variar de acordo com a plataforma de e-commerce" — hoje não está ativo na integração com a VNDA.</p>
+    <p><strong>Status:</strong> e-mail técnico enviado ao time de front-end/desenvolvimento da VNDA, pedindo a implementação do campo <code>aggregateRating</code> no JSON-LD de produto (usando dados reais do Trustvox) e um schema básico de categoria. Atualização de 17/08: a Olist confirmou que encaminhou o pedido ao time de engenharia/produto pra análise de viabilidade técnica, sob protocolo interno — sem prazo definido, aguardando parecer.</p>`
   },
   {
     date: "2026-08-14", tag: "fix", tagLabel: "Ação",
     title: "Bloqueio de crawlers no Cloudflare resolvido pela Olist — confirmado",
     summary: "Olist criou exceção no Cloudflare para os IPs do DataForSEO especificamente na loja Yamys Baby. Testamos novamente e confirmamos acesso normal (200) em 2 páginas.",
-    body: `<p><strong>Contexto:</strong> desde 11/08 tínhamos um chamado aberto com a Olist sobre o Cloudflare bloqueando ferramentas de auditoria SEO (403 Forbidden site-wide, mesmo forjando o User-Agent do Googlebot).</p>
-    <p><strong>Retorno da Olist (Karen, time de tecnologia):</strong> criaram uma exceção no Cloudflare para os IPs da ferramenta de auditoria, especificamente para a loja Yamys Baby.</p>
-    <p><strong>Teste de confirmação:</strong> rodamos o DataForSEO novamente em duas páginas — a home e a categoria de lancheiras. Ambas retornaram <code>status_code: 200</code>, sem nenhum bloqueio, com auditoria completa funcionando normalmente (onpage_score 95,2 e 98,9 respectivamente).</p>
-    <p><strong>Chamado encerrado.</strong> Auditorias contínuas de SEO (DataForSEO, e provavelmente crawlers de redes sociais como Pinterest Rich Pins) voltam a funcionar normalmente.</p>`
+    body: `<p><strong>Contexto:</strong> desde 11/08 havia um chamado aberto com a Olist sobre o Cloudflare bloqueando ferramentas de auditoria SEO (403 Forbidden site-wide, mesmo forjando o User-Agent do Googlebot).</p>
+    <p><strong>O que a Olist fez:</strong> criaram uma exceção no Cloudflare para os IPs da ferramenta de auditoria, especificamente para a loja Yamys Baby.</p>
+    <p><strong>Resultado:</strong> testamos novamente em duas páginas (home e categoria de lancheiras) — ambas retornaram <code>status_code: 200</code>, sem nenhum bloqueio, com auditoria completa funcionando normalmente (onpage_score 95,2 e 98,9 respectivamente). Chamado encerrado; auditorias contínuas de SEO (e provavelmente crawlers de redes sociais como Pinterest Rich Pins) voltam a funcionar normalmente.</p>`
+  },
+  {
+    date: "2026-08-17", tag: "tech", tagLabel: "Técnico",
+    title: "Categoria de produto do Google corrigida no Merchant Center — causa raiz de 5 categorias sem visibilidade no Shopping",
+    summary: "Todos os 87 produtos do feed estavam com a mesma categoria genérica (Malas e bolsas) e sem product_type; corrigido via regras de atributo, cobrindo 26 linhas de produto (86 SKUs).",
+    body: `<p><strong>O que investigamos:</strong> por que páginas com bom título/meta e posição decente no Google (organizador de carrinho, nécessaire, lancheira térmica, trocador portátil, mochila infantil) tinham CTR quase zero mesmo em posições 2-5. Inspecionando o SERP real dessas buscas, confirmamos que resultados de intenção comercial nesse nicho são dominados por carrosséis de "Popular products" (Google Shopping) — o resultado orgânico de texto fica visualmente enterrado atrás de 1-2 blocos de produto, mesmo em boa posição.</p>
+    <p><strong>O que encontramos:</strong> testando os carrosséis de Shopping em 7 categorias, a Yamys só aparecia em 2 (mochila maternidade, organizador de carrinho) — zero presença em bolsa maternidade (49.500 buscas/mês, a maior palavra-chave do nicho), trocador portátil, lancheira térmica, mochila infantil e nécessaire maternidade. Conectado ao Merchant Center via API, confirmamos a causa: <strong>todos os 87 produtos do feed estavam classificados na mesma categoria genérica do Google (<code>5181 — Malas e bolsas</code>)</strong>, sem nenhum <code>product_type</code> preenchido — nécessaire, lancheira, trocador, tudo igual. Rastreamos até a origem: o feed é gerado automaticamente pela VNDA (<code>products_google.rss</code>, sincronizado todo dia às 18h) e o valor vem fixo da plataforma, sem campo editável por produto na API da VNDA — uma correção direta via API do Merchant Center seria sobrescrita na mesma noite.</p>
+    <p><strong>O que fizemos:</strong> mapeamos a categoria correta do Google pra cada linha de produto (nécessaire → 108, trocador portátil → 5628, organizador de carrinho → 4387, lancheira térmica → 669, mochila maternidade/bolsão → 549 — bolsas para fraldas, e mais 12 linhas menores) e criamos regras de atributo no próprio Merchant Center (condição "título contém X" → define categoria + product_type), que sobrescrevem o valor da VNDA de forma permanente, sem depender de mudança na plataforma nem risco do reprocessamento diário apagar o ajuste.</p>
+    <p><strong>Resultado:</strong> 26 linhas de produto corrigidas, cobrindo 86 dos 87 SKUs do catálogo — validado item a item via API (categoria + product_type corretos, status "Aprovado"). Ficaram de fora só ~15 kits/enxovais (bundles que misturam categorias, tratados à parte). Não mexe em preço, estoque ou disponibilidade. Próximo passo é acompanhar nas próximas semanas se essas linhas passam a aparecer nos carrosséis de Shopping onde hoje têm zero presença.</p>`
   }
 ];
 
