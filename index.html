@@ -576,7 +576,7 @@ const revisions = [
     summary: "Produtos têm JSON-LD de Product/Offer/Brand, mas nenhum tem aggregateRating; Trustvox confirma que a marcação depende de configuração da plataforma. E-mail técnico enviado ao time de front da VNDA.",
     body: `<p><strong>O que investigamos:</strong> se as páginas de produto têm marcação de avaliação (schema.org <code>aggregateRating</code>/<code>review</code>) no JSON-LD — item da Fase 1 do plano de SEO, relevante pra habilitar estrelas (Rich Snippets) no resultado de busca.</p>
     <p><strong>O que encontramos:</strong> páginas de produto têm schema.org <code>Product/Offer/Brand/BreadcrumbList</code>, mas nenhuma tem <code>aggregateRating</code>/<code>review</code> — mesmo com o widget de estrelas do Trustvox funcionando visualmente. Páginas de categoria não têm nenhum schema. Confirmamos na documentação oficial do Trustvox que eles fornecem esse markup (Microdata e Json+LD), mas que "essas marcações podem variar de acordo com a plataforma de e-commerce" — hoje não está ativo na integração com a VNDA.</p>
-    <p><strong>Status:</strong> e-mail técnico enviado ao time de front-end/desenvolvimento da VNDA, pedindo a implementação do campo <code>aggregateRating</code> no JSON-LD de produto (usando dados reais do Trustvox) e um schema básico de categoria. Atualização de 17/08: a Olist confirmou que encaminhou o pedido ao time de engenharia/produto pra análise de viabilidade técnica, sob protocolo interno — sem prazo definido, aguardando parecer.</p>`
+    <p><strong>Status:</strong> e-mail técnico enviado ao time de front-end/desenvolvimento da VNDA, pedindo a implementação do campo <code>aggregateRating</code> no JSON-LD de produto (usando dados reais do Trustvox) e um schema básico de categoria. Atualização de 14/08: a Olist confirmou que encaminhou o pedido ao time de engenharia/produto pra análise de viabilidade técnica, sob protocolo interno — sem prazo definido, aguardando parecer.</p>`
   },
   {
     date: "2026-08-14", tag: "fix", tagLabel: "Ação",
@@ -587,7 +587,7 @@ const revisions = [
     <p><strong>Resultado:</strong> testamos novamente em duas páginas (home e categoria de lancheiras) — ambas retornaram <code>status_code: 200</code>, sem nenhum bloqueio, com auditoria completa funcionando normalmente (onpage_score 95,2 e 98,9 respectivamente). Chamado encerrado; auditorias contínuas de SEO (e provavelmente crawlers de redes sociais como Pinterest Rich Pins) voltam a funcionar normalmente.</p>`
   },
   {
-    date: "2026-08-17", tag: "tech", tagLabel: "Técnico",
+    date: "2026-08-14", tag: "tech", tagLabel: "Técnico",
     title: "Categoria de produto do Google corrigida no Merchant Center — causa raiz de 5 categorias sem visibilidade no Shopping",
     summary: "Todos os 87 produtos do feed estavam com a mesma categoria genérica (Malas e bolsas) e sem product_type; corrigido via regras de atributo, cobrindo 26 linhas de produto (86 SKUs).",
     body: `<p><strong>O que investigamos:</strong> por que páginas com bom título/meta e posição decente no Google (organizador de carrinho, nécessaire, lancheira térmica, trocador portátil, mochila infantil) tinham CTR quase zero mesmo em posições 2-5. Inspecionando o SERP real dessas buscas, confirmamos que resultados de intenção comercial nesse nicho são dominados por carrosséis de "Popular products" (Google Shopping) — o resultado orgânico de texto fica visualmente enterrado atrás de 1-2 blocos de produto, mesmo em boa posição.</p>
