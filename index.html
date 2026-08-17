@@ -629,6 +629,13 @@ const revisions = [
     <p><strong>O que fizemos:</strong> criados 18 registros novos de <code>seo_data</code> (resource_type: Product) via <code>POST /api/v2/seo_data</code>, com meta description curta (130-190 caracteres) e focada em benefício real de cada produto, sem inventar especificação.</p>
     <p><strong>Resultado:</strong> confirmado ao vivo nas 18 URLs. Próximo passo natural é estender esse mesmo tratamento pro resto do catálogo (88 produtos no total) e resolver o bug do <code>&lt;p&gt;</code> na home.</p>`
   },
+  {
+    date: "2026-08-17", tag: "content", tagLabel: "Conteúdo",
+    title: "Meta description corrigida nos 70 produtos restantes — catálogo inteiro (88/88) com resumo curto",
+    summary: "Estendido o mesmo tratamento dos 18 produtos anteriores pro resto do catálogo, agrupando por linha de produto (bolsão, lancheira, nécessaire, kits etc). Fecha o item 1 do plano pra produtos.",
+    body: `<p><strong>O que fizemos:</strong> mapeamos os 70 produtos que ainda não tinham registro de <code>seo_data</code> (e por isso caíam no mesmo bug de meta description = descrição completa) e agrupamos por linha — a maioria compartilha o mesmo texto-base, variando só nome/cor (ex: 5 nécessaires, 5 pochetes, 8 kits de presente, 3 kits Volta às Aulas). Criados os 70 registros via <code>POST /api/v2/seo_data</code>, cada um com meta description curta (90-160 caracteres) baseada no conteúdo real do produto — kits com bundle (Enxoval, Kit Volta às Aulas, kits temáticos) tiveram texto listando os itens reais inclusos, sem inventar composição.</p>
+    <p><strong>Resultado:</strong> confirmado ao vivo numa amostra de 20 URLs cobrindo todas as linhas. Catálogo completo (88 de 88 produtos) agora com meta description curta e focada em benefício, fechando o item 1 do plano de revisões pra produtos. Segue em aberto só o bug de template da home (<code>&lt;p&gt;</code> na meta) — chamado enviado à Olist, aguardando retorno.</p>`
+  },
 ];
 
 function fmtBRL(v){ return "R$ " + v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0}); }
