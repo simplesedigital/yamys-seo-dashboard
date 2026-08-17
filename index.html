@@ -612,6 +612,14 @@ const revisions = [
     <p><strong>O que fizemos:</strong> corrigido o <code>parent_id</code> das 3 páginas de mochila (→ 396, o tag_id de <code>mochilas-de-maternidade</code>) via <code>PUT</code>, e criados 2 registros novos via <code>POST /api/v2/seo_data</code> pras páginas sem conteúdo.</p>
     <p><strong>Resultado:</strong> confirmado ao vivo nas 5 URLs — a mochila prática, por exemplo, volta a mostrar "trocador externo, compartimentos multiuso..." em vez do título genérico. Fecha a parte viável do item 4 (varredura técnica). Ficaram de fora 3 kits sazonais (mapeamento de ID incerto — o "pai" encontrado parece apontar pra um registro de "Enxoval", não "Kits", risco de duplicar o bug do organizador-carrinho) e 3 páginas de "Tag Identificadora" sem tag associada no sistema (<code>tag_id: null</code>), que exigem criação manual no painel da VNDA antes de qualquer correção via API.</p>`
   },
+  {
+    date: "2026-08-17", tag: "content", tagLabel: "Conteúdo",
+    title: "Título e descrição das páginas de kit reescritos pra mirar palavras-chave sem ranking",
+    summary: "kit mochila infantil (6.600/mês) e kit bolsa maternidade (9.900/mês) não tinham conteúdo dedicado; conteúdo reescrito em cima das 2 categorias de kit já existentes, sem criar página nova.",
+    body: `<p><strong>O que encontramos:</strong> na tabela de oportunidades, "kit mochila infantil" e "kit bolsa maternidade" apareciam como lacuna de conteúdo (status "gap") — mas o catálogo já tem produtos reais pra esses termos: Kit Volta às Aulas (mochila infantil + lancheira + estojo) e a linha Enxoval (mochila maternidade + organizador + nécessaire). O problema era só de conteúdo: <code>/kits-enxovais/kit</code> mostrava um título genérico duplicado de outra página, e <code>/kits-enxovais/enxoval</code> tinha um título correto mas sem as palavras-chave certas.</p>
+    <p><strong>O que fizemos:</strong> reescrito title/description das 2 páginas via <code>PUT /api/v2/seo_data</code>, mirando os termos de busca reais. No caminho, encontramos o mesmo bug de <code>parent_id</code> de sempre — mesmo sendo só uma atualização de conteúdo, o <code>parent_id</code> das duas entradas estava vazio, então a alteração não aparecia na URL aninhada até corrigirmos pra 395 (o tag_id de <code>kits-enxovais</code>).</p>
+    <p><strong>Resultado:</strong> confirmado ao vivo nas 2 URLs. Primeiro passo do item 3 do plano (categorias novas pra palavras-chave sem ranking) — usando páginas já existentes em vez de criar novas, já que o produto certo já estava no catálogo.</p>`
+  },
 ];
 
 function fmtBRL(v){ return "R$ " + v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0}); }
