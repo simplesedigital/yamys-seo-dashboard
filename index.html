@@ -595,6 +595,15 @@ const revisions = [
     <p><strong>O que fizemos:</strong> mapeamos a categoria correta do Google pra cada linha de produto (nécessaire → 108, trocador portátil → 5628, organizador de carrinho → 4387, lancheira térmica → 669, mochila maternidade/bolsão → 549 — bolsas para fraldas, e mais 12 linhas menores) e criamos regras de atributo no próprio Merchant Center (condição "título contém X" → define categoria + product_type), que sobrescrevem o valor da VNDA de forma permanente, sem depender de mudança na plataforma nem risco do reprocessamento diário apagar o ajuste.</p>
     <p><strong>Resultado:</strong> 26 linhas de produto corrigidas, cobrindo 86 dos 87 SKUs do catálogo — validado item a item via API (categoria + product_type corretos, status "Aprovado"). Ficaram de fora só ~15 kits/enxovais (bundles que misturam categorias, tratados à parte). Não mexe em preço, estoque ou disponibilidade. Próximo passo é acompanhar nas próximas semanas se essas linhas passam a aparecer nos carrosséis de Shopping onde hoje têm zero presença.</p>`
   }
+  {
+    date: "2026-08-17", tag: "tech", tagLabel: "Técnico",
+    title: "Bug de parent_id encontrado em escala — 7 categorias sem título/meta corrigidas",
+    summary: "Mesmo bug já corrigido 3x antes (title/meta vazio por parent_id ausente) apareceu em 16 das 41 páginas de categoria; corrigidas as 7 de maior prioridade + 1 duplicata de título.",
+    body: `<p><strong>O que investigamos:</strong> varredura sistemática de título/meta/canonical nas 41 páginas de categoria do sitemap — primeiro passo do plano de revisões técnicas ("erros de código que atrapalham SEO").</p>
+    <p><strong>O que encontramos:</strong> o mesmo bug de <code>parent_id</code> ausente (já corrigido em mochilas-infantis, trocador-completo e lancheiras) aparece em 16 das 41 páginas — incluindo 4 categorias-pai reais do menu (Linha Infantil, Malas & Pochetes, Trocadores & Organizadores, Bolsas & Acessórios), todas com título "- Yamys" e descrição vazia. Além disso, <code>/trocador-organizador/organizador-carrinho</code> mostrava um título duplicado de outra página — <code>parent_id</code> apontando pro tag errado (84 em vez de 408).</p>
+    <p><strong>O que fizemos:</strong> criamos 7 registros novos de <code>seo_data</code> (title + description) via <code>POST /api/v2/seo_data</code> pras páginas que nunca tiveram conteúdo, e corrigimos o <code>parent_id</code> do organizador-carrinho via <code>PUT /api/v2/seo_data/10</code> (84 → 408) — sem mexer na URL antiga <code>/organizador-carrinho</code>, que continua funcionando normalmente.</p>
+    <p><strong>Resultado:</strong> confirmado ao vivo nas 8 URLs. Restam ~8 páginas de menor prioridade com o mesmo bug (kits sazonais e sub-tags de identificação) e 4 páginas de mochila maternidade com descrição vazia (título ok) — próximos passos do plano de revisões técnicas.</p>`
+  },
 ];
 
 function fmtBRL(v){ return "R$ " + v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0}); }
