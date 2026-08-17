@@ -604,6 +604,14 @@ const revisions = [
     <p><strong>O que fizemos:</strong> criamos 7 registros novos de <code>seo_data</code> (title + description) via <code>POST /api/v2/seo_data</code> pras páginas que nunca tiveram conteúdo, e corrigimos o <code>parent_id</code> do organizador-carrinho via <code>PUT /api/v2/seo_data/10</code> (84 → 408) — sem mexer na URL antiga <code>/organizador-carrinho</code>, que continua funcionando normalmente.</p>
     <p><strong>Resultado:</strong> confirmado ao vivo nas 8 URLs. Restam ~8 páginas de menor prioridade com o mesmo bug (kits sazonais e sub-tags de identificação) e 4 páginas de mochila maternidade com descrição vazia (título ok) — próximos passos do plano de revisões técnicas.</p>`
   },
+  {
+    date: "2026-08-17", tag: "tech", tagLabel: "Técnico",
+    title: "Bug de parent_id fechado — mochila-maternidade-prática/dupla/clássica recuperam conteúdo da Fase 0",
+    summary: "Completa o item 4 do plano técnico: 3 sub-categorias de mochila maternidade + lançamentos + tag de malas-pochetes corrigidos.",
+    body: `<p><strong>O que encontramos:</strong> as 3 sub-categorias de mochila maternidade (prática, dupla, clássica) já tinham título e descrição bem escritos no <code>seo_data</code> desde a correção de prova social (Fase 0, 13/08) — mas com <code>parent_id</code> vazio, então a URL real (aninhada sob <code>/mochilas-de-maternidade</code>) não achava esse conteúdo e caía no título genérico automático, sem descrição. Também encontramos <code>/menu-lancamentos</code> e <code>/malas-pochetes/tag-identificadora</code> sem nenhum registro.</p>
+    <p><strong>O que fizemos:</strong> corrigido o <code>parent_id</code> das 3 páginas de mochila (→ 396, o tag_id de <code>mochilas-de-maternidade</code>) via <code>PUT</code>, e criados 2 registros novos via <code>POST /api/v2/seo_data</code> pras páginas sem conteúdo.</p>
+    <p><strong>Resultado:</strong> confirmado ao vivo nas 5 URLs — a mochila prática, por exemplo, volta a mostrar "trocador externo, compartimentos multiuso..." em vez do título genérico. Fecha a parte viável do item 4 (varredura técnica). Ficaram de fora 3 kits sazonais (mapeamento de ID incerto — o "pai" encontrado parece apontar pra um registro de "Enxoval", não "Kits", risco de duplicar o bug do organizador-carrinho) e 3 páginas de "Tag Identificadora" sem tag associada no sistema (<code>tag_id: null</code>), que exigem criação manual no painel da VNDA antes de qualquer correção via API.</p>`
+  },
 ];
 
 function fmtBRL(v){ return "R$ " + v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0}); }
