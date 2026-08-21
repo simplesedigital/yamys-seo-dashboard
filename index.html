@@ -706,6 +706,13 @@ const revisions = [
     <p><strong>Descoberta no caminho:</strong> o site inteiro fica atrás de um cache do Cloudflare de 4 horas (<code>Cache-Control: max-age=14400</code>). Páginas de alto tráfego (como mochilas-de-maternidade) expiram o cache sozinhas com frequência; páginas de tráfego baixo, como esta, podem continuar servindo a versão antiga por até 4h depois da mudança salva na API, mesmo com a mudança já confirmada por GET. Não temos acesso pra forçar a limpeza desse cache (é gerenciado pela Olist/Cloudflare) — daqui pra frente, qualquer verificação "ao vivo" de uma edição de baixo tráfego precisa considerar essa janela antes de declarar sucesso ou falha.</p>
     <p><strong>Status:</strong> salvo e confirmado via API; aguardando expirar o cache (até 4h) pra confirmar ao vivo no navegador. Acompanhar posição de "bolsa maternidade" nas próximas semanas.</p>`
   },
+  {
+    date: "2026-08-21", tag: "fix", tagLabel: "Ação",
+    title: "Prova social real adicionada ao title/meta de organizador de carrinho e lancheiras",
+    summary: "Mesma fórmula do bolsão aplicada às 2 próximas categorias sem prova social no title/meta — 35 avaliações reais (nota 4,9) no organizador, 29 avaliações (nota 5,0) nas lancheiras.",
+    body: `<p><strong>O que fizemos:</strong> checamos ao vivo o Trustvox de todos os produtos das duas categorias — 5 organizadores de carrinho (10+7+6+5+7 = 35 avaliações, média 4,9) e 6 lancheiras/saquinhos térmicos (7+3+5+6+3+5 = 29 avaliações, todas 100% = nota 5,0). Reescrevemos title/description via <code>PUT /api/v2/seo_data/10</code> (organizador-carrinho) e <code>PUT /api/v2/seo_data/13</code> (lancheiras), citando os números reais em vez de linguagem genérica.</p>
+    <p><strong>Resultado:</strong> confirmado ao vivo nas duas URLs poucos segundos depois de salvar — o cache do Cloudflare dessas duas páginas já estava expirado no momento da edição, diferente do bolsão (entrada anterior), que segue com cache antigo.</p>`
+  },
 ];
 
 function fmtBRL(v){ return "R$ " + v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0}); }
