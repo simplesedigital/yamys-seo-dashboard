@@ -731,6 +731,15 @@ const revisions = [
     <p><strong>Resultado:</strong> confirmado ao vivo em 2 das 3 URLs (da-estacao, dia-do-amigo) na hora. Back-to-school ficou com cache do Cloudflare antigo (mesmo padrão do bolsão/pochetes/nécessaire) — deve propagar dentro da janela de até 4h.</p>
     <p><strong>O que continua bloqueado:</strong> as 3 páginas "Tag Identificadora" (<code>/kits-enxovais/tag-identificadora</code>, <code>/bolsas-acessorios/tag-identificadora</code>, <code>/linha-infantil/tag-identificadora</code>) seguem com título/meta vazios e não têm <code>tag_id</code> nenhum associado no sistema — não existe recurso numérico pra anexar um registro de <code>seo_data</code> via API. Precisa de alguém com acesso ao painel admin da VNDA criar o objeto de tag primeiro; não é uma correção que a API resolve.</p>`
   },
+  {
+    date: "2026-08-21", tag: "fix", tagLabel: "Ação",
+    title: "2º disavow enviado — 25 domínios de spam novos/reincidentes desde 11/08",
+    summary: "Perfil de backlinks revisitado como parte do projeto de recuperação de autoridade de domínio: 31 domínios de referência hoje, maioria spam. Disavow atualizado enviado e aceito (25 domínios, 0 rejeitados).",
+    body: `<p><strong>O que investigamos:</strong> ao abrir a frente de recuperação de autoridade de domínio, revisitamos o perfil de backlinks completo. Achado principal: dos 31 domínios de referência atuais, a maioria é spam genérico (score 50-75, links únicos, sem relação com o nicho) — e o pior, isso <strong>continua acontecendo depois do disavow de 11/08</strong>: 4 domínios novos de spam surgiram entre 12/08 e 20/08. O disavow não é uma ação única, precisa de manutenção periódica. Comparado à concorrente Cheirinho de Neném (rank de domínio 100) a Yamys está em 12-13 — a lacuna de autoridade segue bem aberta 5 meses depois do colapso de março.</p>
+    <p><strong>O que fizemos:</strong> geramos uma lista atualizada com 25 domínios de spam (extraída do perfil de backlinks completo de hoje, não só os "novos" — como o Google substitui a lista inteira a cada envio e não achamos o arquivo original de 11/08 pra mesclar, optamos por uma lista abrangente em vez de arriscar deixar algo de fora). Arquivo enviado via Disavow Tool, propriedade de prefixo de URL.</p>
+    <p><strong>Resultado:</strong> 25 domínios aceitos, 0 rejeitados (enviado 21/08 às 17:31). Mesmo efeito defensivo do envio anterior — leva de dias a semanas pra ser processado, não resolve sozinho a lacuna de autoridade.</p>
+    <p><strong>Próximo passo (ofensivo, pendente):</strong> identificamos 6 sites reais de "melhores bolsas/mochilas maternidade" que rankeiam bem e não citam a Yamys (BabyCenter Brasil, Mãe Experiente, AnalisaMelhor, Guia Recomenda, entre outros) — candidatos a pitch de inclusão editorial. Essa parte exige contato humano (e-mail/relacionamento), não é algo que a API resolve.</p>`
+  },
 ];
 
 function fmtBRL(v){ return "R$ " + v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0}); }
