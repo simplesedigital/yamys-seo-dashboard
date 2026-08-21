@@ -713,6 +713,14 @@ const revisions = [
     body: `<p><strong>O que fizemos:</strong> checamos ao vivo o Trustvox de todos os produtos das duas categorias — 5 organizadores de carrinho (10+7+6+5+7 = 35 avaliações, média 4,9) e 6 lancheiras/saquinhos térmicos (7+3+5+6+3+5 = 29 avaliações, todas 100% = nota 5,0). Reescrevemos title/description via <code>PUT /api/v2/seo_data/10</code> (organizador-carrinho) e <code>PUT /api/v2/seo_data/13</code> (lancheiras), citando os números reais em vez de linguagem genérica.</p>
     <p><strong>Resultado:</strong> confirmado ao vivo nas duas URLs poucos segundos depois de salvar — o cache do Cloudflare dessas duas páginas já estava expirado no momento da edição, diferente do bolsão (entrada anterior), que segue com cache antigo.</p>`
   },
+  {
+    date: "2026-08-21", tag: "fix", tagLabel: "Ação",
+    title: "Prova social adicionada em pochetes e nécessaire; duplicidade de texto entre categorias identificada",
+    summary: "24 avaliações (nota 5,0) em pochetes, 38 avaliações (nota 4,9) em nécessaire. Nécessaire tinha o mesmo parágrafo genérico já visto no bolsão — 2ª ocorrência do mesmo texto duplicado entre categorias.",
+    body: `<p><strong>O que fizemos:</strong> checamos ao vivo o Trustvox de 5 pochetes (13+4+3+4+0 = 24 avaliações, nota 5,0) e 5 nécessaires (0+7+4+15+12 = 38 avaliações, nota 4,9). Reescrevemos title/description via <code>PUT /api/v2/seo_data/32</code> (pochetes-yamys) e <code>PUT /api/v2/seo_data/9</code> (necessaire-grande).</p>
+    <p><strong>O que encontramos no caminho:</strong> a descrição antiga de nécessaire-grande tinha o parágrafo idêntico "Desenvolvidas por mães para você curtir o caminho. Inspiradas nos desafios da rotina com crianças." que já tínhamos visto (e removido) no bolsão — confirma que esse texto genérico está duplicado em pelo menos 2 categorias diferentes, o que é um sinal ruim de conteúdo não-único pro Google. Removido nas duas.</p>
+    <p><strong>Status:</strong> salvo e confirmado via API nas duas. Ao vivo no navegador, as duas seguem com cache do Cloudflare antigo (mesmo padrão do bolsão) — devem atualizar sozinhas dentro da janela de até 4h.</p>`
+  },
 ];
 
 function fmtBRL(v){ return "R$ " + v.toLocaleString('pt-BR', {minimumFractionDigits:0, maximumFractionDigits:0}); }
