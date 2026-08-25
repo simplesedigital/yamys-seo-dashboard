@@ -518,16 +518,30 @@ footer.foot{margin-top:2.5rem; padding-top:1rem; border-top:1px solid var(--bord
 
   <div class="card">
     <div class="controls-row">
-      <div class="legend" id="obLegend" style="margin:0;"></div>
-      <div class="seg" data-chart="orderBump">
+      <div class="legend" id="obLegendVolume" style="margin:0;"></div>
+      <div class="seg" data-chart="orderBumpVolume">
         <button data-gran="D" aria-pressed="true">Dia</button>
         <button data-gran="W" aria-pressed="false">Semana</button>
         <button data-gran="M" aria-pressed="false">Mês</button>
       </div>
     </div>
-    <div class="section-title" style="margin-top:0;">Pedidos, faturamento e % de order bump</div>
+    <div class="section-title" style="margin-top:0;">Pedidos e faturamento com order bump</div>
     <p class="section-note">Clique num item da legenda pra mostrar/esconder essa linha.</p>
-    <div class="chartwrap"><canvas id="chart-orderbump" role="img" aria-label="Pedidos, faturamento e percentuais de order bump ao longo do tempo"></canvas></div>
+    <div class="chartwrap"><canvas id="chart-orderbump-volume" role="img" aria-label="Pedidos e faturamento com order bump ao longo do tempo"></canvas></div>
+  </div>
+
+  <div class="card">
+    <div class="controls-row">
+      <div class="legend" id="obLegendPct" style="margin:0;"></div>
+      <div class="seg" data-chart="orderBumpPct">
+        <button data-gran="D" aria-pressed="true">Dia</button>
+        <button data-gran="W" aria-pressed="false">Semana</button>
+        <button data-gran="M" aria-pressed="false">Mês</button>
+      </div>
+    </div>
+    <div class="section-title" style="margin-top:0;">% de acréscimo e % dos pedidos totais</div>
+    <p class="section-note">Clique num item da legenda pra mostrar/esconder essa linha.</p>
+    <div class="chartwrap"><canvas id="chart-orderbump-pct" role="img" aria-label="Percentuais de order bump ao longo do tempo"></canvas></div>
   </div>
 
   <div class="section-title">Produtos vendidos no order bump</div>
@@ -1322,45 +1336,15 @@ function drawTermRank(from, to){
 }
 
 /* ================= VENDAS: ORDER BUMP ================= */
-let chartOrderBump = null;
+let chartOrderBumpVolume = null;
+let chartOrderBumpPct = null;
 function getOrderBumpRange(){
   return { from: document.getElementById('obDateFrom').value, to: document.getElementById('obDateTo').value };
 }
 
-const OB_SERIES_DEFS = [
-  {key:'bumpOrders', label:'Pedidos com order bump', fmt:v=>fmtNum(Math.round(v))},
-  {key:'bumpOrdersRevenue', label:'Faturamento', fmt:v=>fmtBRL.format(v)},
-  {key:'pctIncrease', label:'% de acréscimo', fmt:v=>v.toFixed(1).replace('.',',')+'%'},
-  {key:'pctTotal', label:'% dos pedidos totais', fmt:v=>v.toFixed(1).replace('.',',')+'%'},
-];
-const OB_AXIS = {bumpOrders:'yOrders', bumpOrdersRevenue:'yRevenue', pctIncrease:'yPctIncrease', pctTotal:'yPctTotal'};
-const obHidden = {};
-
-function renderObLegend(){
-  const el = document.getElementById('obLegend');
-  el.innerHTML = OB_SERIES_DEFS.map((s,i)=>`
-    <span class="sw ob-toggle${obHidden[s.key]?' off':''}" data-key="${s.key}" tabindex="0" role="button" aria-pressed="${!obHidden[s.key]}">
-      <span class="dot" style="background:${seriesColor(i)}"></span>${s.label}
-    </span>`).join('');
-  el.querySelectorAll('.ob-toggle').forEach(node=>{
-    node.addEventListener('click', ()=>{
-      const key = node.dataset.key;
-      obHidden[key] = !obHidden[key];
-      node.classList.toggle('off', obHidden[key]);
-      node.setAttribute('aria-pressed', !obHidden[key]);
-      if(chartOrderBump){
-        const idx = OB_SERIES_DEFS.findIndex(s=>s.key===key);
-        chartOrderBump.setDatasetVisibility(idx, !obHidden[key]);
-        chartOrderBump.update();
-      }
-    });
-  });
-}
-
-function drawOrderBumpChart(){
-  const {from,to} = getOrderBumpRange();
-  const raw = aggregate(filterByDate(orderBumpDaily, from, to), obGran.orderBump, ['totalOrders','bumpOrders','bumpOrdersRevenue','bumpItemValue']);
-  const data = raw.map(d=>{
+function computeOrderBumpSeries(from, to, gran){
+  const raw = aggregate(filterByDate(orderBumpDaily, from, to), gran, ['totalOrders','bumpOrders','bumpOrdersRevenue','bumpItemValue']);
+  return raw.map(d=>{
     const base = d.bumpOrdersRevenue - d.bumpItemValue;
     return {
       date: d.date,
@@ -1370,17 +1354,85 @@ function drawOrderBumpChart(){
       pctTotal: d.totalOrders>0 ? d.bumpOrders/d.totalOrders*100 : 0,
     };
   });
-  const labels = data.map(d=>labelFor(d.date, obGran.orderBump));
+}
 
-  const datasets = OB_SERIES_DEFS.map((s,i)=>({
+function buildToggleLegend(elId, defs, hiddenState, getChart){
+  const el = document.getElementById(elId);
+  el.innerHTML = defs.map((s,i)=>`
+    <span class="sw ob-toggle${hiddenState[s.key]?' off':''}" data-key="${s.key}" tabindex="0" role="button" aria-pressed="${!hiddenState[s.key]}">
+      <span class="dot" style="background:${seriesColor(i)}"></span>${s.label}
+    </span>`).join('');
+  el.querySelectorAll('.ob-toggle').forEach(node=>{
+    node.addEventListener('click', ()=>{
+      const key = node.dataset.key;
+      hiddenState[key] = !hiddenState[key];
+      node.classList.toggle('off', hiddenState[key]);
+      node.setAttribute('aria-pressed', !hiddenState[key]);
+      const chart = getChart();
+      if(chart){
+        const idx = defs.findIndex(s=>s.key===key);
+        chart.setDatasetVisibility(idx, !hiddenState[key]);
+        chart.update();
+      }
+    });
+  });
+}
+
+/* ---- gráfico 1: Pedidos (barra) + Faturamento (linha) ---- */
+const OB_VOLUME_DEFS = [
+  {key:'bumpOrders', label:'Pedidos com order bump', fmt:v=>fmtNum(Math.round(v))},
+  {key:'bumpOrdersRevenue', label:'Faturamento', fmt:v=>fmtBRL.format(v)},
+];
+const obHiddenVolume = {};
+function renderObLegendVolume(){ buildToggleLegend('obLegendVolume', OB_VOLUME_DEFS, obHiddenVolume, ()=>chartOrderBumpVolume); }
+
+function drawOrderBumpVolumeChart(){
+  const {from,to} = getOrderBumpRange();
+  const data = computeOrderBumpSeries(from, to, obGran.orderBumpVolume);
+  const labels = data.map(d=>labelFor(d.date, obGran.orderBumpVolume));
+  const datasets = [
+    {type:'bar', label:OB_VOLUME_DEFS[0].label, data:data.map(d=>d.bumpOrders), backgroundColor:seriesColor(0), yAxisID:'yOrders', order:2, borderRadius:2, maxBarThickness:26, hidden:!!obHiddenVolume.bumpOrders},
+    {type:'line', label:OB_VOLUME_DEFS[1].label, data:data.map(d=>d.bumpOrdersRevenue), borderColor:seriesColor(1), backgroundColor:seriesColor(1), yAxisID:'yRevenue', order:1, borderWidth:2, pointRadius:data.length>40?0:2.5, pointHoverRadius:5, tension:0.2, hidden:!!obHiddenVolume.bumpOrdersRevenue},
+  ];
+  if(chartOrderBumpVolume) chartOrderBumpVolume.destroy();
+  chartOrderBumpVolume = new Chart(document.getElementById('chart-orderbump-volume'), {
+    data:{labels, datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:(c)=> OB_VOLUME_DEFS[c.datasetIndex].label+': '+OB_VOLUME_DEFS[c.datasetIndex].fmt(c.parsed.y)}}
+      },
+      scales:{
+        x: baseScalesX(),
+        yOrders:{position:'left', display:'auto', grid:baseGridY(), ticks:{color:cssVar('--text-muted')}},
+        yRevenue:{position:'right', display:'auto', grid:{display:false}, ticks:{color:cssVar('--text-muted'), callback:v=>'R$'+Math.round(v/1000)+'k'}},
+      }
+    }
+  });
+}
+
+/* ---- gráfico 2: % de acréscimo + % dos pedidos totais (mesmo eixo) ---- */
+const OB_PCT_DEFS = [
+  {key:'pctIncrease', label:'% de acréscimo', fmt:v=>v.toFixed(1).replace('.',',')+'%'},
+  {key:'pctTotal', label:'% dos pedidos totais', fmt:v=>v.toFixed(1).replace('.',',')+'%'},
+];
+const obHiddenPct = {};
+function renderObLegendPct(){ buildToggleLegend('obLegendPct', OB_PCT_DEFS, obHiddenPct, ()=>chartOrderBumpPct); }
+
+function drawOrderBumpPctChart(){
+  const {from,to} = getOrderBumpRange();
+  const data = computeOrderBumpSeries(from, to, obGran.orderBumpPct);
+  const labels = data.map(d=>labelFor(d.date, obGran.orderBumpPct));
+  const datasets = OB_PCT_DEFS.map((s,i)=>({
     label: s.label, data: data.map(d=>d[s.key]),
     borderColor: seriesColor(i), backgroundColor: seriesColor(i),
     borderWidth:2, pointRadius:data.length>40?0:2.5, pointHoverRadius:5, tension:0.2,
-    yAxisID: OB_AXIS[s.key], hidden: !!obHidden[s.key],
+    yAxisID:'yPct', hidden: !!obHiddenPct[s.key],
   }));
-
-  if(chartOrderBump) chartOrderBump.destroy();
-  chartOrderBump = new Chart(document.getElementById('chart-orderbump'), {
+  if(chartOrderBumpPct) chartOrderBumpPct.destroy();
+  chartOrderBumpPct = new Chart(document.getElementById('chart-orderbump-pct'), {
     type:'line',
     data:{labels, datasets},
     options:{
@@ -1388,14 +1440,11 @@ function drawOrderBumpChart(){
       interaction:{mode:'index', intersect:false},
       plugins:{
         legend:{display:false},
-        tooltip:{callbacks:{label:(c)=> OB_SERIES_DEFS[c.datasetIndex].label+': '+OB_SERIES_DEFS[c.datasetIndex].fmt(c.parsed.y)}}
+        tooltip:{callbacks:{label:(c)=> OB_PCT_DEFS[c.datasetIndex].label+': '+OB_PCT_DEFS[c.datasetIndex].fmt(c.parsed.y)}}
       },
       scales:{
         x: baseScalesX(),
-        yOrders:{type:'linear', position:'left', display:'auto', grid:baseGridY(), ticks:{color:cssVar('--text-muted')}},
-        yRevenue:{type:'linear', position:'left', display:'auto', grid:{display:false}, ticks:{color:cssVar('--text-muted'), callback:v=>'R$'+Math.round(v/1000)+'k'}},
-        yPctIncrease:{type:'linear', position:'right', display:'auto', grid:{display:false}, ticks:{color:cssVar('--text-muted'), callback:v=>v+'%'}},
-        yPctTotal:{type:'linear', position:'right', display:'auto', grid:{display:false}, ticks:{color:cssVar('--text-muted'), callback:v=>v+'%'}},
+        yPct:{position:'left', grid:baseGridY(), ticks:{color:cssVar('--text-muted'), callback:v=>v+'%'}},
       }
     }
   });
@@ -1420,7 +1469,8 @@ function renderOrderBump(){
   document.getElementById('obKpiGrid').innerHTML = kpis.map(k=>`
     <div class="kpi"><div class="label">${k.label}</div><div class="value">${k.value}</div></div>`).join('');
 
-  safeRun(drawOrderBumpChart, 'gráfico de order bump');
+  safeRun(drawOrderBumpVolumeChart, 'gráfico de pedidos/faturamento (order bump)');
+  safeRun(drawOrderBumpPctChart, 'gráfico de percentuais (order bump)');
 
   const itemsInRange = orderBumpItems.filter(it=>it.date>=from && it.date<=to);
   const byProduct = {};
@@ -1543,7 +1593,7 @@ const rankDrawFns = {
   pageRank: ()=>{ const {from,to}=getTermsRange(); safeRun(()=>drawPageRank(from,to), 'gráfico de páginas'); },
   termRank: ()=>{ const {from,to}=getTermsRange(); safeRun(()=>drawTermRank(from,to), 'gráfico de termos'); }
 };
-const obGran = { orderBump: 'D' };
+const obGran = { orderBumpVolume: 'D', orderBumpPct: 'D' };
 document.querySelectorAll('.seg[data-chart]').forEach(seg=>{
   seg.addEventListener('click', e=>{
     const btn = e.target.closest('button'); if(!btn) return;
@@ -1552,9 +1602,12 @@ document.querySelectorAll('.seg[data-chart]').forEach(seg=>{
     if(chart==='revSessions' || chart==='gsc'){
       currentGran[chart] = btn.dataset.gran;
       if(chart==='revSessions') safeRun(drawRevSessions,'gráfico de receita/sessões'); else safeRun(drawGsc,'gráfico do Search Console');
-    } else if(chart==='orderBump'){
-      obGran.orderBump = btn.dataset.gran;
-      safeRun(drawOrderBumpChart, 'gráfico de order bump');
+    } else if(chart==='orderBumpVolume'){
+      obGran.orderBumpVolume = btn.dataset.gran;
+      safeRun(drawOrderBumpVolumeChart, 'gráfico de pedidos/faturamento (order bump)');
+    } else if(chart==='orderBumpPct'){
+      obGran.orderBumpPct = btn.dataset.gran;
+      safeRun(drawOrderBumpPctChart, 'gráfico de percentuais (order bump)');
     } else {
       if(seg.dataset.kind==='topn') rankState[chart].topN = parseInt(btn.dataset.topn);
       else rankState[chart].gran = btn.dataset.gran;
@@ -1634,7 +1687,8 @@ document.getElementById('termsDateTo').addEventListener('change', renderTerms);
 initDateRangePicker('ob-daterange-btn', 'obDateFrom', 'obDateTo');
 document.getElementById('obDateFrom').addEventListener('change', renderOrderBump);
 document.getElementById('obDateTo').addEventListener('change', renderOrderBump);
-renderObLegend();
+renderObLegendVolume();
+renderObLegendPct();
 
 /* ---------------- INFOTIP (tooltip de ajuda em colunas de tabela) ---------------- */
 function positionInfotip(icon){
