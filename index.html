@@ -1246,7 +1246,7 @@ function drawRevSessions(){
   if(chartRevSessions) chartRevSessions.destroy();
   chartRevSessions = drawDualChart('chart-revsessions', data, currentGran.revSessions, {
     barKey:'revenue', lineKey:'sessions', barLabel:'Receita', lineLabel:'Sessões',
-    barFmt:v=>'R$'+Math.round(v/1000)+'k', lineFmt:v=>Math.round(v), invertLine:false
+    barFmt:v=>fmtBRL.format(v), lineFmt:v=>Math.round(v), invertLine:false
   });
 }
 function drawGsc(){
@@ -1411,7 +1411,7 @@ function drawOrderBumpVolumeChart(){
       scales:{
         x: baseScalesX(),
         yOrders:{position:'left', display:'auto', grid:baseGridY(), ticks:{color:cssVar('--text-muted')}},
-        yRevenue:{position:'right', display:'auto', grid:{display:false}, ticks:{color:cssVar('--text-muted'), callback:v=>'R$'+Math.round(v/1000)+'k'}},
+        yRevenue:{position:'right', display:'auto', grid:{display:false}, ticks:{color:cssVar('--text-muted'), callback:v=>fmtBRL.format(v)}},
       }
     }
   });
