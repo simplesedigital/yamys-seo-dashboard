@@ -53,7 +53,6 @@
 html{overflow-anchor:none;}
 body{background:var(--surface-0); color:var(--text-primary); font-family:var(--font-sans); margin:0; padding:1.25rem; font-size:14px; line-height:1.5;}
 .sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap;}
-.page{max-width:1180px; margin:0 auto;}
 .pageheader{display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap;}
 #sticky-wrap{display:none; position:sticky; top:0; margin-top:-1.25rem; padding-top:1.25rem; z-index:20; background:var(--surface-0); border-bottom:1px solid var(--border);}
 h1{font-size:19px; font-weight:600; margin:0 0 2px;}
@@ -284,11 +283,11 @@ footer.foot{margin-top:2.5rem; padding-top:1rem; border-top:1px solid var(--bord
 </div>
 
 <div class="tabbar" id="top-tabbar" role="tablist">
-  <button class="tabbtn" id="topbtn-seo" role="tab" aria-selected="true" onclick="switchTopTab('seo')">SEO</button>
-  <button class="tabbtn" id="topbtn-vendas" role="tab" aria-selected="false" onclick="switchTopTab('vendas')">Vendas</button>
+  <button class="tabbtn" id="topbtn-vendas" role="tab" aria-selected="true" onclick="switchTopTab('vendas')">Vendas</button>
+  <button class="tabbtn" id="topbtn-seo" role="tab" aria-selected="false" onclick="switchTopTab('seo')">SEO</button>
 </div>
 
-<div class="panel active" id="toppanel-seo">
+<div class="panel" id="toppanel-seo">
 
 <div class="tabbar sub" role="tablist">
   <button class="tabbtn" id="seobtn-overview" role="tab" aria-selected="true" onclick="switchSeoSub('overview')">Visão Geral</button>
@@ -490,7 +489,7 @@ footer.foot{margin-top:2.5rem; padding-top:1rem; border-top:1px solid var(--bord
 </div><!-- /toppanel-seo -->
 
 <!-- ================= VENDAS ================= -->
-<div class="panel" id="toppanel-vendas">
+<div class="panel active" id="toppanel-vendas">
 
 <div class="tabbar sub" role="tablist">
   <button class="tabbtn" id="vdbtn-orderbump" role="tab" aria-selected="true" onclick="switchVendasSub('orderbump')">Order Bump</button>
@@ -683,7 +682,7 @@ document.getElementById('pin-checkbox').addEventListener('change', e=>{
 
 /* ---------------- ABAS ---------------- */
 function switchTopTab(name){
-  ['seo','vendas'].forEach(n=>{
+  ['vendas','seo'].forEach(n=>{
     document.getElementById('toppanel-'+n).classList.toggle('active', n===name);
     document.getElementById('topbtn-'+n).setAttribute('aria-selected', n===name);
   });
