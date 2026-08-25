@@ -133,6 +133,11 @@ input[type="date"], input[type="text"], input[type="number"], select{
 .legend{display:flex; flex-wrap:wrap; gap:12px; font-size:12px; color:var(--text-secondary); margin:0 0 8px;}
 .legend .sw{display:inline-flex; align-items:center; gap:5px;}
 .legend .dot{width:9px; height:9px; border-radius:2px; display:inline-block;}
+.ob-toggle{cursor:pointer; user-select:none; opacity:1; transition:opacity .15s; padding:3px 8px 3px 4px; border-radius:6px; background:var(--surface-2);}
+.ob-toggle:hover{background:var(--surface-2); box-shadow:0 0 0 1px var(--border-strong);}
+.ob-toggle.off{opacity:.4;}
+.infotip{position:relative; display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; margin-left:5px; border-radius:50%; background:var(--surface-2); border:1px solid var(--border-strong); color:var(--text-muted); font-size:10px; font-weight:700; font-style:normal; text-transform:none; cursor:help; vertical-align:middle; flex-shrink:0;}
+.infotip .tooltip-box{display:none; position:fixed; width:230px; background:var(--surface-2); color:var(--text-primary); border:1px solid var(--border-strong); border-radius:8px; padding:8px 10px; font-size:11.5px; font-weight:400; text-transform:none; text-align:left; line-height:1.4; box-shadow:0 4px 16px rgba(0,0,0,.25); z-index:9999; white-space:normal; cursor:auto;}
 .chartwrap{position:relative; width:100%; height:280px; margin-bottom:.75rem;}
 .tablewrap{overflow-x:auto; border-radius:var(--radius); border:1px solid var(--border);}
 table{width:100%; border-collapse:collapse; font-size:12.5px; min-width:480px;}
@@ -513,25 +518,28 @@ footer.foot{margin-top:2.5rem; padding-top:1rem; border-top:1px solid var(--bord
 
   <div class="card">
     <div class="controls-row">
-      <div class="legend" style="margin:0;">
-        <span class="sw"><span class="dot" style="background:var(--s1)"></span>Pedidos com order bump</span>
-        <span class="sw"><span class="dot" style="background:var(--s2)"></span>Faturamento (R$)</span>
-      </div>
+      <div class="legend" id="obLegend" style="margin:0;"></div>
       <div class="seg" data-chart="orderBump">
         <button data-gran="D" aria-pressed="true">Dia</button>
         <button data-gran="W" aria-pressed="false">Semana</button>
         <button data-gran="M" aria-pressed="false">Mês</button>
       </div>
     </div>
-    <div class="section-title" style="margin-top:0;">Pedidos e faturamento com order bump</div>
-    <div class="chartwrap"><canvas id="chart-orderbump" role="img" aria-label="Pedidos e faturamento com order bump ao longo do tempo"></canvas></div>
+    <div class="section-title" style="margin-top:0;">Pedidos, faturamento e % de order bump</div>
+    <p class="section-note">Clique num item da legenda pra mostrar/esconder essa linha.</p>
+    <div class="chartwrap"><canvas id="chart-orderbump" role="img" aria-label="Pedidos, faturamento e percentuais de order bump ao longo do tempo"></canvas></div>
   </div>
 
   <div class="section-title">Produtos vendidos no order bump</div>
   <p class="section-note">Preço já com o desconto do order bump aplicado.</p>
   <div class="tablewrap">
     <table id="tblOrderBumpProducts">
-      <thead><tr><th>Produto</th><th class="num">Qtd.</th><th class="num">Faturamento</th><th class="num">Ticket médio</th></tr></thead>
+      <thead><tr>
+        <th>Produto</th>
+        <th class="num">Qtd.</th>
+        <th class="num">Faturamento<span class="infotip" tabindex="0" role="img" aria-label="Soma do preço já com desconto do order bump vezes a quantidade vendida, para esse produto no período selecionado.">i<span class="tooltip-box">Soma do preço já com desconto do order bump × quantidade vendida, para esse produto no período selecionado.</span></span></th>
+        <th class="num">Ticket médio<span class="infotip" tabindex="0" role="img" aria-label="Faturamento do produto dividido pela quantidade vendida — o preço médio efetivo de cada unidade vendida como order bump.">i<span class="tooltip-box">Faturamento do produto dividido pela quantidade vendida — o preço médio efetivo de cada unidade vendida como order bump.</span></span></th>
+      </tr></thead>
       <tbody></tbody>
     </table>
   </div>
@@ -1318,13 +1326,78 @@ let chartOrderBump = null;
 function getOrderBumpRange(){
   return { from: document.getElementById('obDateFrom').value, to: document.getElementById('obDateTo').value };
 }
+
+const OB_SERIES_DEFS = [
+  {key:'bumpOrders', label:'Pedidos com order bump', fmt:v=>fmtNum(Math.round(v))},
+  {key:'bumpOrdersRevenue', label:'Faturamento', fmt:v=>fmtBRL.format(v)},
+  {key:'pctIncrease', label:'% de acréscimo', fmt:v=>v.toFixed(1).replace('.',',')+'%'},
+  {key:'pctTotal', label:'% dos pedidos totais', fmt:v=>v.toFixed(1).replace('.',',')+'%'},
+];
+const OB_AXIS = {bumpOrders:'yOrders', bumpOrdersRevenue:'yRevenue', pctIncrease:'yPctIncrease', pctTotal:'yPctTotal'};
+const obHidden = {};
+
+function renderObLegend(){
+  const el = document.getElementById('obLegend');
+  el.innerHTML = OB_SERIES_DEFS.map((s,i)=>`
+    <span class="sw ob-toggle${obHidden[s.key]?' off':''}" data-key="${s.key}" tabindex="0" role="button" aria-pressed="${!obHidden[s.key]}">
+      <span class="dot" style="background:${seriesColor(i)}"></span>${s.label}
+    </span>`).join('');
+  el.querySelectorAll('.ob-toggle').forEach(node=>{
+    node.addEventListener('click', ()=>{
+      const key = node.dataset.key;
+      obHidden[key] = !obHidden[key];
+      node.classList.toggle('off', obHidden[key]);
+      node.setAttribute('aria-pressed', !obHidden[key]);
+      if(chartOrderBump){
+        const idx = OB_SERIES_DEFS.findIndex(s=>s.key===key);
+        chartOrderBump.setDatasetVisibility(idx, !obHidden[key]);
+        chartOrderBump.update();
+      }
+    });
+  });
+}
+
 function drawOrderBumpChart(){
   const {from,to} = getOrderBumpRange();
-  const data = aggregate(filterByDate(orderBumpDaily, from, to), obGran.orderBump, ['bumpOrders','bumpOrdersRevenue']);
+  const raw = aggregate(filterByDate(orderBumpDaily, from, to), obGran.orderBump, ['totalOrders','bumpOrders','bumpOrdersRevenue','bumpItemValue']);
+  const data = raw.map(d=>{
+    const base = d.bumpOrdersRevenue - d.bumpItemValue;
+    return {
+      date: d.date,
+      bumpOrders: d.bumpOrders,
+      bumpOrdersRevenue: d.bumpOrdersRevenue,
+      pctIncrease: base>0 ? d.bumpItemValue/base*100 : 0,
+      pctTotal: d.totalOrders>0 ? d.bumpOrders/d.totalOrders*100 : 0,
+    };
+  });
+  const labels = data.map(d=>labelFor(d.date, obGran.orderBump));
+
+  const datasets = OB_SERIES_DEFS.map((s,i)=>({
+    label: s.label, data: data.map(d=>d[s.key]),
+    borderColor: seriesColor(i), backgroundColor: seriesColor(i),
+    borderWidth:2, pointRadius:data.length>40?0:2.5, pointHoverRadius:5, tension:0.2,
+    yAxisID: OB_AXIS[s.key], hidden: !!obHidden[s.key],
+  }));
+
   if(chartOrderBump) chartOrderBump.destroy();
-  chartOrderBump = drawDualChart('chart-orderbump', data, obGran.orderBump, {
-    barKey:'bumpOrders', lineKey:'bumpOrdersRevenue', barLabel:'Pedidos com order bump', lineLabel:'Faturamento',
-    barFmt:v=>Math.round(v), lineFmt:v=>'R$'+Math.round(v/1000)+'k', invertLine:false
+  chartOrderBump = new Chart(document.getElementById('chart-orderbump'), {
+    type:'line',
+    data:{labels, datasets},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:(c)=> OB_SERIES_DEFS[c.datasetIndex].label+': '+OB_SERIES_DEFS[c.datasetIndex].fmt(c.parsed.y)}}
+      },
+      scales:{
+        x: baseScalesX(),
+        yOrders:{type:'linear', position:'left', display:'auto', grid:baseGridY(), ticks:{color:cssVar('--text-muted')}},
+        yRevenue:{type:'linear', position:'left', display:'auto', grid:{display:false}, ticks:{color:cssVar('--text-muted'), callback:v=>'R$'+Math.round(v/1000)+'k'}},
+        yPctIncrease:{type:'linear', position:'right', display:'auto', grid:{display:false}, ticks:{color:cssVar('--text-muted'), callback:v=>v+'%'}},
+        yPctTotal:{type:'linear', position:'right', display:'auto', grid:{display:false}, ticks:{color:cssVar('--text-muted'), callback:v=>v+'%'}},
+      }
+    }
   });
 }
 function renderOrderBump(){
@@ -1553,11 +1626,52 @@ document.getElementById('termsDateTo').addEventListener('change', renderTerms);
 {
   const of = document.getElementById('obDateFrom'), ot = document.getElementById('obDateTo');
   of.min = ORDERBUMP_FIRST_DATE; of.max = ORDERBUMP_LAST_DATE; ot.min = ORDERBUMP_FIRST_DATE; ot.max = ORDERBUMP_LAST_DATE;
-  of.value = ORDERBUMP_FIRST_DATE; ot.value = ORDERBUMP_LAST_DATE;
+  const d = parseD(ORDERBUMP_LAST_DATE); d.setDate(d.getDate()-29);
+  let defaultFrom = d.toISOString().slice(0,10);
+  if(defaultFrom < ORDERBUMP_FIRST_DATE) defaultFrom = ORDERBUMP_FIRST_DATE;
+  of.value = defaultFrom; ot.value = ORDERBUMP_LAST_DATE;
 }
 initDateRangePicker('ob-daterange-btn', 'obDateFrom', 'obDateTo');
 document.getElementById('obDateFrom').addEventListener('change', renderOrderBump);
 document.getElementById('obDateTo').addEventListener('change', renderOrderBump);
+renderObLegend();
+
+/* ---------------- INFOTIP (tooltip de ajuda em colunas de tabela) ---------------- */
+function positionInfotip(icon){
+  const box = icon.querySelector('.tooltip-box');
+  if(!box) return;
+  box.style.display = 'block';
+  box.style.left = '0px';
+  box.style.top = '0px';
+  const r = icon.getBoundingClientRect();
+  const boxRect = box.getBoundingClientRect();
+  let left = r.left + r.width/2 - boxRect.width/2;
+  left = Math.max(8, Math.min(left, window.innerWidth - boxRect.width - 8));
+  let top = r.top - boxRect.height - 6;
+  if(top < 8) top = r.bottom + 6;
+  box.style.left = left + 'px';
+  box.style.top = top + 'px';
+}
+function hideInfotip(icon){
+  const box = icon.querySelector('.tooltip-box');
+  if(box) box.style.display = 'none';
+}
+document.addEventListener('mouseover', e=>{
+  const icon = e.target.closest('.infotip');
+  if(icon && !icon.contains(e.relatedTarget)) positionInfotip(icon);
+});
+document.addEventListener('mouseout', e=>{
+  const icon = e.target.closest('.infotip');
+  if(icon && !icon.contains(e.relatedTarget)) hideInfotip(icon);
+});
+document.addEventListener('focusin', e=>{
+  const icon = e.target.closest('.infotip');
+  if(icon) positionInfotip(icon);
+});
+document.addEventListener('focusout', e=>{
+  const icon = e.target.closest('.infotip');
+  if(icon) hideInfotip(icon);
+});
 
 render();
 renderTerms();
