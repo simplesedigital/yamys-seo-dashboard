@@ -425,6 +425,11 @@ footer.foot{margin-top:2.5rem; padding-top:1rem; border-top:1px solid var(--bord
         <button data-topn="10" aria-pressed="false">Top 10</button>
         <button data-topn="15" aria-pressed="false">Top 15</button>
       </div>
+      <div class="seg" data-chart="termRank" data-kind="brand">
+        <button data-brand="all" aria-pressed="true">Todos</button>
+        <button data-brand="brand" aria-pressed="false">Marca</button>
+        <button data-brand="nobrand" aria-pressed="false">Não-marca</button>
+      </div>
     </div>
     <div class="legend" id="termRankLegend"></div>
     <div class="chartwrap"><canvas id="chart-termrank" role="img" aria-label="Posição dos termos ao longo do tempo"></canvas></div>
@@ -1193,7 +1198,18 @@ const ORDERBUMP_LAST_DATE = "2026-08-25";
 /* ================= GRÁFICOS (Chart.js) ================= */
 let chartRevSessions=null, chartGsc=null, chartPageRank=null, chartTermRank=null;
 let currentGran = {revSessions:'D', gsc:'D'};
-const rankState = { pageRank:{gran:'D', topN:5}, termRank:{gran:'D', topN:5} };
+const rankState = { pageRank:{gran:'D', topN:5}, termRank:{gran:'D', topN:5, brand:'all'} };
+const BRAND_RE = /yam|yum/i;
+function isBrandTerm(term){ return BRAND_RE.test(term); }
+function filterTermsByBrand(seriesObj, mode){
+  if(mode==='all') return seriesObj;
+  const out = {};
+  Object.keys(seriesObj).forEach(k=>{
+    const brand = isBrandTerm(k);
+    if((mode==='brand' && brand) || (mode==='nobrand' && !brand)) out[k] = seriesObj[k];
+  });
+  return out;
+}
 
 function baseScalesX(){
   return {grid:{display:false}, ticks:{color:cssVar('--text-muted'), maxRotation:0, autoSkip:true, font:{size:10.5}}};
@@ -1335,8 +1351,15 @@ function drawPageRank(from, to){
     c=>chartPageRank=c, ()=>chartPageRank);
 }
 function drawTermRank(from, to){
-  drawRankChart('chart-termrank', 'termRankLegend', termDailySeries, null, from, to, rankState.termRank,
+  const series = filterTermsByBrand(termDailySeries, rankState.termRank.brand);
+  drawRankChart('chart-termrank', 'termRankLegend', series, null, from, to, rankState.termRank,
     c=>chartTermRank=c, ()=>chartTermRank);
+}
+function renderTermsTable(){
+  const {from, to} = getTermsRange();
+  const termRows = buildRankedRows(filterTermsByBrand(termDailySeries, rankState.termRank.brand), from, to, 15);
+  document.getElementById('tblQueries').querySelector('tbody').innerHTML = termRows.map(q=>`
+    <tr><td class="name">${q.key}</td><td class="num">${fmtNum(q.clicks)}</td><td class="num">${fmtNum(q.impressions)}</td><td class="num">${posPill(q.position)}</td></tr>`).join('');
 }
 
 /* ================= VENDAS: ORDER BUMP ================= */
@@ -1596,9 +1619,7 @@ function renderTerms(){
   document.getElementById('tblPages').querySelector('tbody').innerHTML = pageRows.map(p=>`
     <tr><td class="name">${p.key}</td><td class="num">${fmtNum(p.clicks)}</td><td class="num">${fmtNum(p.impressions)}</td><td class="num">${fmtPct(p.ctr)}</td><td class="num">${posPill(p.position)}</td></tr>`).join('');
 
-  const termRows = buildRankedRows(termDailySeries, from, to, 15);
-  document.getElementById('tblQueries').querySelector('tbody').innerHTML = termRows.map(q=>`
-    <tr><td class="name">${q.key}</td><td class="num">${fmtNum(q.clicks)}</td><td class="num">${fmtNum(q.impressions)}</td><td class="num">${posPill(q.position)}</td></tr>`).join('');
+  renderTermsTable();
 
   const totalSessions = channelBreakdown.reduce((sum,c)=>sum+c.sessions,0);
   document.getElementById('channelList').innerHTML = channelBreakdown.map(c=>{
@@ -1615,7 +1636,7 @@ function renderTerms(){
 /* ================= CONTROLES (seg/toggle) ================= */
 const rankDrawFns = {
   pageRank: ()=>{ const {from,to}=getTermsRange(); safeRun(()=>drawPageRank(from,to), 'gráfico de páginas'); },
-  termRank: ()=>{ const {from,to}=getTermsRange(); safeRun(()=>drawTermRank(from,to), 'gráfico de termos'); }
+  termRank: ()=>{ const {from,to}=getTermsRange(); safeRun(()=>drawTermRank(from,to), 'gráfico de termos'); safeRun(renderTermsTable, 'tabela de termos'); }
 };
 const obGran = { orderBumpVolume: 'D', orderBumpPct: 'D' };
 document.querySelectorAll('.seg[data-chart]').forEach(seg=>{
@@ -1634,6 +1655,7 @@ document.querySelectorAll('.seg[data-chart]').forEach(seg=>{
       safeRun(drawOrderBumpPctChart, 'gráfico de percentuais (order bump)');
     } else {
       if(seg.dataset.kind==='topn') rankState[chart].topN = parseInt(btn.dataset.topn);
+      else if(seg.dataset.kind==='brand') rankState[chart].brand = btn.dataset.brand;
       else rankState[chart].gran = btn.dataset.gran;
       rankDrawFns[chart]();
     }
