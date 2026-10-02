@@ -832,6 +832,14 @@ const initDateRangePicker = (function(){
     popup.style.left = left + 'px';
     popup.style.top = top + 'px';
   }
+  function clampView(){
+    const mx = activeCtx && activeCtx.maxDate;
+    if(!mx) return;
+    const m = new Date(mx+'T00:00:00Z');
+    let ly = m.getUTCFullYear(), lm = m.getUTCMonth()-1;
+    if(lm<0){ lm=11; ly--; }
+    if(viewYear*12+viewMonth > ly*12+lm){ viewYear = ly; viewMonth = lm; }
+  }
   function openPicker(ctx){
     if(activeCtx && activeCtx!==ctx) closePicker();
     activeCtx = ctx;
@@ -841,6 +849,7 @@ const initDateRangePicker = (function(){
     const base = pendingStart || ctx.maxDate || todayISO();
     const d = new Date(base+'T00:00:00Z');
     viewYear = d.getUTCFullYear(); viewMonth = d.getUTCMonth();
+    clampView();
     popup.style.visibility = 'hidden';
     popup.style.display = 'block';
     renderCalendars();
@@ -894,7 +903,7 @@ const initDateRangePicker = (function(){
     });
   });
   btnPrev.addEventListener('click', ()=>{ viewMonth--; if(viewMonth<0){viewMonth=11; viewYear--;} renderCalendars(); });
-  btnNext.addEventListener('click', ()=>{ viewMonth++; if(viewMonth>11){viewMonth=0; viewYear++;} renderCalendars(); });
+  btnNext.addEventListener('click', ()=>{ viewMonth++; if(viewMonth>11){viewMonth=0; viewYear++;} clampView(); renderCalendars(); });
   btnCancel.addEventListener('click', closePicker);
   btnApply.addEventListener('click', applyPicker);
   document.addEventListener('click', (e)=>{
@@ -1873,6 +1882,11 @@ const ga4FirstDate = ga4Daily[0].date;
   const lastD = parseD(ga4LastDate);
   const monthStart = `${lastD.getFullYear()}-${String(lastD.getMonth()+1).padStart(2,'0')}-01`;
   df.value = monthStart; dt.value = ga4LastDate;
+  if(lastD.getDate() < 8){
+    const back = new Date(lastD); back.setDate(back.getDate()-29);
+    const bs = `${back.getFullYear()}-${String(back.getMonth()+1).padStart(2,'0')}-${String(back.getDate()).padStart(2,'0')}`;
+    df.value = bs < ga4FirstDate ? ga4FirstDate : bs;
+  }
 }
 initDateRangePicker('ov-daterange-btn', 'dateFrom', 'dateTo');
 document.getElementById('dateFrom').addEventListener('change', render);
