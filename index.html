@@ -640,7 +640,8 @@ footer.foot{margin-top:2.5rem; padding-top:1rem; border-top:1px solid var(--bord
 <div class="panel" id="toppanel-crm">
 
 <div class="tabbar sub" role="tablist">
-  <button class="tabbtn" id="crmbtn-overview" role="tab" aria-selected="true">Visão Geral</button>
+  <button class="tabbtn" id="crmbtn-overview" role="tab" aria-selected="true" onclick="switchCrmSub('overview')">Visão Geral</button>
+  <button class="tabbtn" id="crmbtn-ac" role="tab" aria-selected="false" onclick="switchCrmSub('ac')">Active Campaign</button>
 </div>
 
 <div class="subpanel active" id="crmpanel-overview">
@@ -723,11 +724,136 @@ footer.foot{margin-top:2.5rem; padding-top:1rem; border-top:1px solid var(--bord
 
 </div>
 
+<div class="subpanel" id="crmpanel-ac">
+
+  <div class="card">
+    <div class="filterbar">
+      <div class="field">
+        <label>Período</label>
+        <button type="button" class="dr-trigger" id="ac-daterange-btn"></button>
+        <input type="date" id="acDateFrom" style="display:none;">
+        <input type="date" id="acDateTo" style="display:none;">
+      </div>
+      <span class="hint"><strong>Campanhas</strong> = disparos pontuais pra base (promoções, lançamentos, avisos). <strong>Fluxos automáticos</strong> = e-mails disparados por gatilho (boas-vindas, carrinho abandonado, pós-compra). O período filtra os KPIs, os gráficos de taxas e as tabelas de campanhas; os fluxos entram por mês inteiro. Evolução da base e resumo mensal mostram o histórico todo.</span>
+    </div>
+  </div>
+
+  <div class="section-title" style="margin-top:0;">Base de contatos</div>
+  <p class="section-note" id="acBaseNote"></p>
+  <div class="kpirow" id="acBaseKpis"></div>
+
+  <div class="card">
+    <div class="section-title" style="margin-top:0;">Evolução da base — mês a mês</div>
+    <p class="section-note">Barras = contatos novos cadastrados no mês. Linha = quantos contatos receberam o último disparo do mês (a melhor medida disponível do tamanho da base enviável; o ActiveCampaign não guarda o histórico de ativos/descadastrados). Quedas bruscas da linha indicam limpeza da base ou descadastros em massa.</p>
+    <div class="chartwrap"><canvas id="chart-ac-base" role="img" aria-label="Novos contatos por mês e alcance do último disparo do mês"></canvas></div>
+  </div>
+
+  <div class="callout warn" id="acReachCallout" style="margin-bottom:1rem; display:none;"></div>
+
+  <div class="section-title">Campanhas (disparos pontuais)</div>
+  <div class="kpirow" id="acKpiCamp"></div>
+
+  <div class="card">
+    <div class="controls-row">
+      <div class="legend" style="margin:0;">
+        <span class="sw"><span class="dot" style="background:var(--s1)"></span>Abertura (%)</span>
+        <span class="sw"><span class="dot" style="background:var(--s2)"></span>Cliques (% dos enviados)</span>
+      </div>
+    </div>
+    <div class="section-title" style="margin-top:0;">Abertura e cliques por disparo</div>
+    <div class="chartwrap"><canvas id="chart-ac-rates" role="img" aria-label="Taxa de abertura e de cliques por campanha ao longo do tempo"></canvas></div>
+  </div>
+
+  <div class="callout info" style="margin-bottom:1rem;">
+    <div class="dot"></div>
+    <div>
+      <h3>Como ler abertura e cliques</h3>
+      <p>A <strong>abertura</strong> do ActiveCampaign inclui aberturas automáticas do Apple Mail (proteção de privacidade), que inflam a taxa. A coluna <strong>Abertura verificada</strong> mostra só as aberturas confirmadas pelo próprio ActiveCampaign, bem mais perto da realidade. <strong>Cliques</strong> = contatos únicos que clicaram ÷ enviados. <strong>CTOR</strong> = cliques ÷ aberturas.</p>
+    </div>
+  </div>
+
+  <div class="tablewrap">
+    <table id="tblAcCampaigns">
+      <thead><tr>
+        <th>Data</th>
+        <th>Campanha</th>
+        <th class="num">Enviados</th>
+        <th class="num">Abertura</th>
+        <th class="num">Abertura verificada</th>
+        <th class="num">Cliques</th>
+        <th class="num">CTOR</th>
+        <th class="num">Descad.</th>
+        <th class="num">Sessões</th>
+        <th class="num">Pedidos</th>
+        <th class="num">Receita</th>
+        <th class="num">Receita / 1.000 env.</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="section-title">Fluxos automáticos</div>
+  <p class="section-note" id="acAutoNote"></p>
+  <div class="kpirow" id="acKpiAuto"></div>
+  <div class="tablewrap">
+    <table id="tblAcAutos">
+      <thead><tr>
+        <th>E-mail do fluxo</th>
+        <th class="num">Enviados</th>
+        <th class="num">Abertura</th>
+        <th class="num">Cliques</th>
+        <th class="num">CTOR</th>
+        <th class="num">Descad.</th>
+        <th class="num">Sessões</th>
+        <th class="num">Pedidos</th>
+        <th class="num">Receita</th>
+        <th class="num">Receita / 1.000 env.</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-top:1rem;">
+    <div class="legend" id="acLegendRev" style="margin:0 0 .5rem;"></div>
+    <div class="section-title" style="margin-top:0;">Receita por mês — campanhas × fluxos automáticos</div>
+    <p class="section-note">Não depende do filtro de período. Receita do GA4 (sessões com origem ActiveCampaign).</p>
+    <div class="chartwrap"><canvas id="chart-ac-rev" role="img" aria-label="Receita mensal do ActiveCampaign, campanhas e fluxos automáticos"></canvas></div>
+  </div>
+
+  <div class="section-title">Resumo mensal</div>
+  <p class="section-note">Não depende do filtro de período. O mês em andamento é parcial. "Base alcançada" = contatos que receberam o último disparo do mês.</p>
+  <div class="tablewrap">
+    <table id="tblAcMonths">
+      <thead><tr>
+        <th>Mês</th>
+        <th class="num">Base alcançada</th>
+        <th class="num">Novos contatos</th>
+        <th class="num">Campanhas</th>
+        <th class="num">Enviados</th>
+        <th class="num">Abertura</th>
+        <th class="num">Cliques</th>
+        <th class="num">Pedidos</th>
+        <th class="num">Receita</th>
+        <th class="num">Fluxos: enviados</th>
+        <th class="num">Fluxos: abertura</th>
+        <th class="num">Fluxos: cliques</th>
+        <th class="num">Fluxos: pedidos</th>
+        <th class="num">Fluxos: receita</th>
+        <th class="num">Descad.</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <p class="section-note" id="acAttrNote" style="margin-top:1rem;"></p>
+
+</div>
+
 </div><!-- /toppanel-crm -->
 
 
 <footer class="foot">
-  Fonte: Google Analytics 4 (propriedade 482634584, medium contém "organic"), Google Search Console (sc-domain:yamysbaby.com) e API Vnda (pedidos). Aba CRM: GA4, origem/mídia contém "mail", dados até 05/10/2026. Snapshot em 15/10/2026 — peça atualização a qualquer momento.
+  Fonte: Google Analytics 4 (propriedade 482634584, medium contém "organic"), Google Search Console (sc-domain:yamysbaby.com) e API Vnda (pedidos). Aba CRM: GA4, origem/mídia contém "mail", dados até <span id="crmFooterDate"></span>. Snapshot em 15/10/2026 — peça atualização a qualquer momento.
 </footer>
 
 </div>
@@ -1566,6 +1692,14 @@ const revisions = [
     title: "Aba CRM parada em 05/10 — atualização diária passa a incluir o CRM; dias 06 a 14 recuperados",
     summary: "A rotina diária atualizava GA4, Search Console, vendas, termos e order bump, mas nunca o CRM (e-mail e WhatsApp por origem). Os dados pararam em 05/10 e agora entram todos os dias.",
     body: `<p><strong>Causa:</strong> o CRM não fazia parte da rotina automática; só mudava quando o painel era regenerado à mão. <strong>Correção:</strong> nova etapa <code>update_crm</code> no <code>atualizacao_dashboard_seo.py</code>, com a mesma regra do painel: sessões, pedidos e receita (GA4, origem/mídia com \"mail\" ou \"whats\") separados em ActiveCampaign (origem), produto-disponivel (campanha) e Outros. Conferi a regra recalculando 11 dias que já estavam no painel (25/09 a 05/10): zero diferenças. Dias 06 a 14/10 adicionados. Se a etapa falhar, o resto da atualização segue e o aviso fica no log.</p>`
+  },
+  {
+    date: "2026-10-15", tag: "content", tagLabel: "Conteúdo",
+    title: "Nova aba CRM › Active Campaign: evolução da base, campanhas e fluxos automáticos",
+    summary: "Envios, abertura, cliques, descadastros, pedidos e receita de cada disparo do ActiveCampaign (mar/25 a out/26), separados em campanhas (disparos pontuais) e fluxos automáticos, mais a evolução da base de contatos.",
+    body: `<p><strong>Campanhas</strong> = disparos pontuais pra base (134 desde mar/25); <strong>fluxos automáticos</strong> = e-mails por gatilho (boas-vindas 1.0 e 2.0, carrinho abandonado 1.0 e 2.0, pós-compra). <strong>Dados:</strong> envios, aberturas, cliques, bounces e descadastros vêm do ActiveCampaign (campanhas por disparo; fluxos por mês, que é o que a ferramenta informa). Pedidos e receita vêm do GA4 (sessões com origem ActiveCampaign, último clique), ligados à campanha pelo nome da campanha no link e pela data de envio; R$ 358 e 1 pedido não puderam ser ligados a nenhuma campanha. <strong>Abertura verificada:</strong> a abertura do ActiveCampaign inclui as aberturas automáticas do Apple Mail; a coluna verificada mostra só as confirmadas (~7% nos últimos disparos contra ~40% da abertura total).</p>
+    <p><strong>Base:</strong> hoje 5.358 contatos ativos, 6.790 descadastrados e 204 com bounce (12.352 cadastrados). O ActiveCampaign não guarda o histórico de ativos, então a evolução usa os contatos novos por mês e o alcance do último disparo de cada mês. O alcance caiu de 7.463 (07/10) para 5.814 no disparo do Nido (14/10): confirmar se foi limpeza da base.</p>
+    <p><strong>Limites:</strong> os dados do ActiveCampaign foram carregados em 15/10 (conversões até 14/10); a atualização diária automática ainda depende de uma chave de API do ActiveCampaign nos segredos do GitHub. A atualização diária do CRM em si (origem/mídia de e-mail) já roda sozinha.</p>`
   },
 ];
 const orderBumpDaily = [{"date":"2025-08-07","totalOrders":3,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-08","totalOrders":4,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-09","totalOrders":8,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-10","totalOrders":8,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-11","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-12","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-13","totalOrders":21,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-14","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-15","totalOrders":8,"bumpOrders":1,"bumpOrdersRevenue":746.04,"bumpItemValue":90.3},{"date":"2025-08-16","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-17","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-18","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-19","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-20","totalOrders":9,"bumpOrders":1,"bumpOrdersRevenue":695.75,"bumpItemValue":96.75},{"date":"2025-08-21","totalOrders":8,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-22","totalOrders":4,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-23","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-24","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-25","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-26","totalOrders":13,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-27","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-28","totalOrders":9,"bumpOrders":1,"bumpOrdersRevenue":791.75,"bumpItemValue":96.75},{"date":"2025-08-29","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-30","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-08-31","totalOrders":18,"bumpOrders":2,"bumpOrdersRevenue":1405.85,"bumpItemValue":193.5},{"date":"2025-09-01","totalOrders":13,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-02","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-03","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-04","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-05","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-06","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-07","totalOrders":17,"bumpOrders":1,"bumpOrdersRevenue":1700.75,"bumpItemValue":96.75},{"date":"2025-09-08","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-09","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-10","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-11","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-12","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-13","totalOrders":8,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-14","totalOrders":16,"bumpOrders":1,"bumpOrdersRevenue":821.74,"bumpItemValue":96.75},{"date":"2025-09-15","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-16","totalOrders":6,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-17","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-18","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-19","totalOrders":8,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-20","totalOrders":3,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-21","totalOrders":7,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-22","totalOrders":11,"bumpOrders":1,"bumpOrdersRevenue":390.84,"bumpItemValue":90.3},{"date":"2025-09-23","totalOrders":14,"bumpOrders":1,"bumpOrdersRevenue":757.0,"bumpItemValue":96.75},{"date":"2025-09-24","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-25","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-26","totalOrders":11,"bumpOrders":1,"bumpOrdersRevenue":1148.75,"bumpItemValue":96.75},{"date":"2025-09-27","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-28","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-09-29","totalOrders":13,"bumpOrders":2,"bumpOrdersRevenue":1158.6,"bumpItemValue":187.05},{"date":"2025-09-30","totalOrders":8,"bumpOrders":2,"bumpOrdersRevenue":1497.9,"bumpItemValue":193.5},{"date":"2025-10-01","totalOrders":11,"bumpOrders":1,"bumpOrdersRevenue":1614.19,"bumpItemValue":90.3},{"date":"2025-10-02","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-03","totalOrders":7,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-04","totalOrders":14,"bumpOrders":1,"bumpOrdersRevenue":1536.82,"bumpItemValue":96.75},{"date":"2025-10-05","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-06","totalOrders":15,"bumpOrders":2,"bumpOrdersRevenue":2364.5,"bumpItemValue":193.5},{"date":"2025-10-07","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-08","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-09","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-10","totalOrders":12,"bumpOrders":1,"bumpOrdersRevenue":752.16,"bumpItemValue":96.75},{"date":"2025-10-11","totalOrders":7,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-12","totalOrders":15,"bumpOrders":1,"bumpOrdersRevenue":645.3,"bumpItemValue":90.3},{"date":"2025-10-13","totalOrders":7,"bumpOrders":2,"bumpOrdersRevenue":2509.2,"bumpItemValue":180.6},{"date":"2025-10-14","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-15","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-16","totalOrders":10,"bumpOrders":2,"bumpOrdersRevenue":1786.86,"bumpItemValue":193.5},{"date":"2025-10-17","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-18","totalOrders":7,"bumpOrders":1,"bumpOrdersRevenue":2277.65,"bumpItemValue":58.65},{"date":"2025-10-19","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-20","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-21","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-22","totalOrders":7,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-23","totalOrders":4,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-24","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-25","totalOrders":11,"bumpOrders":1,"bumpOrdersRevenue":830.28,"bumpItemValue":90.3},{"date":"2025-10-26","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-27","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-28","totalOrders":8,"bumpOrders":1,"bumpOrdersRevenue":1074.61,"bumpItemValue":155.4},{"date":"2025-10-29","totalOrders":9,"bumpOrders":1,"bumpOrdersRevenue":468.3,"bumpItemValue":96.75},{"date":"2025-10-30","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-10-31","totalOrders":10,"bumpOrders":1,"bumpOrdersRevenue":937.83,"bumpItemValue":96.75},{"date":"2025-11-01","totalOrders":6,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-02","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-03","totalOrders":12,"bumpOrders":1,"bumpOrdersRevenue":309.83,"bumpItemValue":96.75},{"date":"2025-11-04","totalOrders":4,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-05","totalOrders":8,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-06","totalOrders":8,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-07","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-08","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-09","totalOrders":13,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-10","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-11","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-12","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-13","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-14","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-15","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-16","totalOrders":14,"bumpOrders":1,"bumpOrdersRevenue":1080.75,"bumpItemValue":96.75},{"date":"2025-11-17","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-18","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-19","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-20","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-21","totalOrders":16,"bumpOrders":1,"bumpOrdersRevenue":207.31,"bumpItemValue":90.3},{"date":"2025-11-22","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-23","totalOrders":23,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-24","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-25","totalOrders":8,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-26","totalOrders":13,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-27","totalOrders":8,"bumpOrders":1,"bumpOrdersRevenue":1005.3,"bumpItemValue":90.3},{"date":"2025-11-28","totalOrders":32,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-29","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-11-30","totalOrders":6,"bumpOrders":1,"bumpOrdersRevenue":626.18,"bumpItemValue":96.75},{"date":"2025-12-01","totalOrders":7,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-02","totalOrders":17,"bumpOrders":1,"bumpOrdersRevenue":230.85,"bumpItemValue":96.75},{"date":"2025-12-03","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-04","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-05","totalOrders":17,"bumpOrders":1,"bumpOrdersRevenue":565.48,"bumpItemValue":96.75},{"date":"2025-12-06","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-07","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-08","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-09","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-10","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-11","totalOrders":14,"bumpOrders":1,"bumpOrdersRevenue":1996.75,"bumpItemValue":96.75},{"date":"2025-12-12","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-13","totalOrders":15,"bumpOrders":1,"bumpOrdersRevenue":1841.14,"bumpItemValue":96.75},{"date":"2025-12-14","totalOrders":26,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-15","totalOrders":27,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-16","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-17","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-18","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-19","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-20","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-21","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-22","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-23","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-24","totalOrders":5,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-25","totalOrders":10,"bumpOrders":1,"bumpOrdersRevenue":392.3,"bumpItemValue":96.75},{"date":"2025-12-26","totalOrders":16,"bumpOrders":1,"bumpOrdersRevenue":1959.05,"bumpItemValue":187.05},{"date":"2025-12-27","totalOrders":6,"bumpOrders":1,"bumpOrdersRevenue":809.9,"bumpItemValue":96.75},{"date":"2025-12-28","totalOrders":13,"bumpOrders":1,"bumpOrdersRevenue":884.56,"bumpItemValue":151.05},{"date":"2025-12-29","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-30","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2025-12-31","totalOrders":13,"bumpOrders":1,"bumpOrdersRevenue":953.55,"bumpItemValue":46.55},{"date":"2026-01-01","totalOrders":10,"bumpOrders":1,"bumpOrdersRevenue":559.84,"bumpItemValue":90.3},{"date":"2026-01-02","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-03","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-04","totalOrders":16,"bumpOrders":1,"bumpOrdersRevenue":975.37,"bumpItemValue":96.75},{"date":"2026-01-05","totalOrders":15,"bumpOrders":1,"bumpOrdersRevenue":544.75,"bumpItemValue":96.75},{"date":"2026-01-06","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-07","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-08","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-09","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-10","totalOrders":13,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-11","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-12","totalOrders":27,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-13","totalOrders":23,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-14","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-15","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-16","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-17","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-18","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-19","totalOrders":24,"bumpOrders":1,"bumpOrdersRevenue":812.92,"bumpItemValue":90.3},{"date":"2026-01-20","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-21","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-22","totalOrders":21,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-23","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-24","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-25","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-26","totalOrders":21,"bumpOrders":1,"bumpOrdersRevenue":669.8,"bumpItemValue":58.65},{"date":"2026-01-27","totalOrders":24,"bumpOrders":1,"bumpOrdersRevenue":1380.35,"bumpItemValue":151.05},{"date":"2026-01-28","totalOrders":24,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-01-29","totalOrders":18,"bumpOrders":1,"bumpOrdersRevenue":1259.75,"bumpItemValue":96.75},{"date":"2026-01-30","totalOrders":13,"bumpOrders":2,"bumpOrdersRevenue":1125.73,"bumpItemValue":143.3},{"date":"2026-01-31","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-01","totalOrders":30,"bumpOrders":1,"bumpOrdersRevenue":811.21,"bumpItemValue":96.75},{"date":"2026-02-02","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-03","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-04","totalOrders":19,"bumpOrders":1,"bumpOrdersRevenue":574.75,"bumpItemValue":96.75},{"date":"2026-02-05","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-06","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-07","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-08","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-09","totalOrders":20,"bumpOrders":3,"bumpOrdersRevenue":2040.59,"bumpItemValue":290.7},{"date":"2026-02-10","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-11","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-12","totalOrders":22,"bumpOrders":1,"bumpOrdersRevenue":366.55,"bumpItemValue":46.55},{"date":"2026-02-13","totalOrders":18,"bumpOrders":1,"bumpOrdersRevenue":589.75,"bumpItemValue":96.75},{"date":"2026-02-14","totalOrders":14,"bumpOrders":1,"bumpOrdersRevenue":351.81,"bumpItemValue":46.55},{"date":"2026-02-15","totalOrders":23,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-16","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-17","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-18","totalOrders":18,"bumpOrders":1,"bumpOrdersRevenue":415.74,"bumpItemValue":96.75},{"date":"2026-02-19","totalOrders":31,"bumpOrders":2,"bumpOrdersRevenue":1406.0,"bumpItemValue":93.1},{"date":"2026-02-20","totalOrders":13,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-21","totalOrders":13,"bumpOrders":1,"bumpOrdersRevenue":1379.75,"bumpItemValue":96.75},{"date":"2026-02-22","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-23","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-24","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-25","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-26","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-27","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-02-28","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-01","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-02","totalOrders":9,"bumpOrders":1,"bumpOrdersRevenue":741.55,"bumpItemValue":46.55},{"date":"2026-03-03","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-04","totalOrders":30,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-05","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-06","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-07","totalOrders":30,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-08","totalOrders":29,"bumpOrders":1,"bumpOrdersRevenue":480.69,"bumpItemValue":90.3},{"date":"2026-03-09","totalOrders":21,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-10","totalOrders":21,"bumpOrders":1,"bumpOrdersRevenue":358.26,"bumpItemValue":46.55},{"date":"2026-03-11","totalOrders":25,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-12","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-13","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-14","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-15","totalOrders":28,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-16","totalOrders":25,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-17","totalOrders":23,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-18","totalOrders":20,"bumpOrders":1,"bumpOrdersRevenue":520.1,"bumpItemValue":151.05},{"date":"2026-03-19","totalOrders":8,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-20","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-21","totalOrders":15,"bumpOrders":1,"bumpOrdersRevenue":351.38,"bumpItemValue":90.3},{"date":"2026-03-22","totalOrders":27,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-23","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-24","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-25","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-26","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-27","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-28","totalOrders":13,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-29","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-30","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-03-31","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-01","totalOrders":6,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-02","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-03","totalOrders":18,"bumpOrders":1,"bumpOrdersRevenue":802.8,"bumpItemValue":96.75},{"date":"2026-04-04","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-05","totalOrders":18,"bumpOrders":1,"bumpOrdersRevenue":630.56,"bumpItemValue":151.05},{"date":"2026-04-06","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-07","totalOrders":26,"bumpOrders":1,"bumpOrdersRevenue":652.14,"bumpItemValue":151.05},{"date":"2026-04-08","totalOrders":20,"bumpOrders":1,"bumpOrdersRevenue":1251.96,"bumpItemValue":96.75},{"date":"2026-04-09","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-10","totalOrders":18,"bumpOrders":1,"bumpOrdersRevenue":2287.57,"bumpItemValue":96.75},{"date":"2026-04-11","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-12","totalOrders":20,"bumpOrders":1,"bumpOrdersRevenue":389.39,"bumpItemValue":90.3},{"date":"2026-04-13","totalOrders":20,"bumpOrders":1,"bumpOrdersRevenue":424.39,"bumpItemValue":96.75},{"date":"2026-04-14","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-15","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-16","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-17","totalOrders":13,"bumpOrders":1,"bumpOrdersRevenue":848.04,"bumpItemValue":96.75},{"date":"2026-04-18","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-19","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-20","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-21","totalOrders":23,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-22","totalOrders":17,"bumpOrders":1,"bumpOrdersRevenue":791.75,"bumpItemValue":96.75},{"date":"2026-04-23","totalOrders":17,"bumpOrders":1,"bumpOrdersRevenue":334.79,"bumpItemValue":90.3},{"date":"2026-04-24","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-25","totalOrders":20,"bumpOrders":1,"bumpOrdersRevenue":3240.21,"bumpItemValue":96.75},{"date":"2026-04-26","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-27","totalOrders":18,"bumpOrders":1,"bumpOrdersRevenue":460.88,"bumpItemValue":90.3},{"date":"2026-04-28","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-29","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-04-30","totalOrders":8,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-01","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-02","totalOrders":15,"bumpOrders":1,"bumpOrdersRevenue":1604.12,"bumpItemValue":46.55},{"date":"2026-05-03","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-04","totalOrders":24,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-05","totalOrders":21,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-06","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-07","totalOrders":21,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-08","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-09","totalOrders":12,"bumpOrders":1,"bumpOrdersRevenue":861.94,"bumpItemValue":90.3},{"date":"2026-05-10","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-11","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-12","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-13","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-14","totalOrders":19,"bumpOrders":1,"bumpOrdersRevenue":598.16,"bumpItemValue":151.05},{"date":"2026-05-15","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-16","totalOrders":21,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-17","totalOrders":16,"bumpOrders":1,"bumpOrdersRevenue":731.86,"bumpItemValue":46.55},{"date":"2026-05-18","totalOrders":14,"bumpOrders":3,"bumpOrdersRevenue":1717.15,"bumpItemValue":183.4},{"date":"2026-05-19","totalOrders":16,"bumpOrders":1,"bumpOrdersRevenue":667.45,"bumpItemValue":46.55},{"date":"2026-05-20","totalOrders":21,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-21","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-22","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-23","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-24","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-25","totalOrders":21,"bumpOrders":2,"bumpOrdersRevenue":1397.54,"bumpItemValue":149.75},{"date":"2026-05-26","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-27","totalOrders":7,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-28","totalOrders":19,"bumpOrders":1,"bumpOrdersRevenue":841.51,"bumpItemValue":103.2},{"date":"2026-05-29","totalOrders":13,"bumpOrders":1,"bumpOrdersRevenue":1320.2,"bumpItemValue":103.2},{"date":"2026-05-30","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-05-31","totalOrders":23,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-01","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-02","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-03","totalOrders":17,"bumpOrders":1,"bumpOrdersRevenue":741.55,"bumpItemValue":46.55},{"date":"2026-06-04","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-05","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-06","totalOrders":26,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-07","totalOrders":28,"bumpOrders":1,"bumpOrdersRevenue":355.14,"bumpItemValue":46.55},{"date":"2026-06-08","totalOrders":25,"bumpOrders":2,"bumpOrdersRevenue":2937.75,"bumpItemValue":149.75},{"date":"2026-06-09","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-10","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-11","totalOrders":22,"bumpOrders":2,"bumpOrdersRevenue":2098.36,"bumpItemValue":93.1},{"date":"2026-06-12","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-13","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-14","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-15","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-16","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-17","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-18","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-19","totalOrders":14,"bumpOrders":1,"bumpOrdersRevenue":1511.45,"bumpItemValue":46.55},{"date":"2026-06-20","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-21","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-22","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-23","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-24","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-25","totalOrders":11,"bumpOrders":1,"bumpOrdersRevenue":706.8,"bumpItemValue":46.55},{"date":"2026-06-26","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-27","totalOrders":21,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-28","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-29","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-06-30","totalOrders":14,"bumpOrders":1,"bumpOrdersRevenue":1030.55,"bumpItemValue":46.55},{"date":"2026-07-01","totalOrders":17,"bumpOrders":1,"bumpOrdersRevenue":675.64,"bumpItemValue":103.2},{"date":"2026-07-02","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-07-03","totalOrders":20,"bumpOrders":1,"bumpOrdersRevenue":1946.55,"bumpItemValue":46.55},{"date":"2026-07-04","totalOrders":19,"bumpOrders":1,"bumpOrdersRevenue":751.24,"bumpItemValue":46.55},{"date":"2026-07-05","totalOrders":6,"bumpOrders":1,"bumpOrdersRevenue":764.32,"bumpItemValue":46.55},{"date":"2026-07-06","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-07-07","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-07-08","totalOrders":26,"bumpOrders":1,"bumpOrdersRevenue":368.07,"bumpItemValue":46.55},{"date":"2026-07-09","totalOrders":23,"bumpOrders":1,"bumpOrdersRevenue":2129.41,"bumpItemValue":149.75},{"date":"2026-07-10","totalOrders":13,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-07-11","totalOrders":22,"bumpOrders":1,"bumpOrdersRevenue":361.13,"bumpItemValue":46.55},{"date":"2026-07-12","totalOrders":20,"bumpOrders":2,"bumpOrdersRevenue":563.11,"bumpItemValue":149.75},{"date":"2026-07-13","totalOrders":20,"bumpOrders":1,"bumpOrdersRevenue":706.8,"bumpItemValue":46.55},{"date":"2026-07-14","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-07-15","totalOrders":17,"bumpOrders":1,"bumpOrdersRevenue":966.2,"bumpItemValue":103.2},{"date":"2026-07-16","totalOrders":12,"bumpOrders":1,"bumpOrdersRevenue":1903.04,"bumpItemValue":103.2},{"date":"2026-07-17","totalOrders":16,"bumpOrders":1,"bumpOrdersRevenue":847.2,"bumpItemValue":103.2},{"date":"2026-07-18","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-07-19","totalOrders":17,"bumpOrders":1,"bumpOrdersRevenue":234.06,"bumpItemValue":103.2},{"date":"2026-07-20","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-07-21","totalOrders":18,"bumpOrders":3,"bumpOrdersRevenue":1866.26,"bumpItemValue":309.6},{"date":"2026-07-22","totalOrders":13,"bumpOrders":1,"bumpOrdersRevenue":582.47,"bumpItemValue":103.2},{"date":"2026-07-23","totalOrders":19,"bumpOrders":1,"bumpOrdersRevenue":823.3,"bumpItemValue":103.2},{"date":"2026-07-24","totalOrders":14,"bumpOrders":1,"bumpOrdersRevenue":1871.97,"bumpItemValue":103.2},{"date":"2026-07-25","totalOrders":17,"bumpOrders":1,"bumpOrdersRevenue":243.64,"bumpItemValue":103.2},{"date":"2026-07-26","totalOrders":21,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-07-27","totalOrders":25,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-07-28","totalOrders":25,"bumpOrders":1,"bumpOrdersRevenue":758.29,"bumpItemValue":103.2},{"date":"2026-07-29","totalOrders":16,"bumpOrders":1,"bumpOrdersRevenue":981.35,"bumpItemValue":46.55},{"date":"2026-07-30","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-07-31","totalOrders":25,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-01","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-02","totalOrders":19,"bumpOrders":2,"bumpOrdersRevenue":1636.3,"bumpItemValue":93.1},{"date":"2026-08-03","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-04","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-05","totalOrders":27,"bumpOrders":2,"bumpOrdersRevenue":2677.1,"bumpItemValue":93.1},{"date":"2026-08-06","totalOrders":29,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-07","totalOrders":31,"bumpOrders":1,"bumpOrdersRevenue":654.75,"bumpItemValue":103.2},{"date":"2026-08-08","totalOrders":36,"bumpOrders":1,"bumpOrdersRevenue":468.76,"bumpItemValue":103.2},{"date":"2026-08-09","totalOrders":23,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-10","totalOrders":27,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-11","totalOrders":26,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-12","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-13","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-14","totalOrders":16,"bumpOrders":1,"bumpOrdersRevenue":1114.41,"bumpItemValue":143.65},{"date":"2026-08-15","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-16","totalOrders":27,"bumpOrders":1,"bumpOrdersRevenue":860.6,"bumpItemValue":245.65},{"date":"2026-08-17","totalOrders":26,"bumpOrders":1,"bumpOrdersRevenue":838.65,"bumpItemValue":143.65},{"date":"2026-08-18","totalOrders":22,"bumpOrders":1,"bumpOrdersRevenue":796.72,"bumpItemValue":143.65},{"date":"2026-08-19","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-20","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-21","totalOrders":13,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-22","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-23","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-24","totalOrders":15,"bumpOrders":1,"bumpOrdersRevenue":701.72,"bumpItemValue":143.65},{"date":"2026-08-25","totalOrders":4,"bumpOrders":1,"bumpOrdersRevenue":905.9,"bumpItemValue":245.65},{"date":"2026-08-26","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-27","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-28","totalOrders":10,"bumpOrders":1,"bumpOrdersRevenue":940.65,"bumpItemValue":245.65},{"date":"2026-08-29","totalOrders":18,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-08-30","totalOrders":11,"bumpOrders":2,"bumpOrdersRevenue":1164.63,"bumpItemValue":190.2},{"date":"2026-08-31","totalOrders":19,"bumpOrders":2,"bumpOrdersRevenue":1154.16,"bumpItemValue":190.2},{"date":"2026-09-01","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-02","totalOrders":16,"bumpOrders":1,"bumpOrdersRevenue":1599.94,"bumpItemValue":389.3},{"date":"2026-09-03","totalOrders":21,"bumpOrders":3,"bumpOrdersRevenue":2652.64,"bumpItemValue":333.85},{"date":"2026-09-04","totalOrders":16,"bumpOrders":1,"bumpOrdersRevenue":1003.75,"bumpItemValue":143.65},{"date":"2026-09-05","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-06","totalOrders":22,"bumpOrders":1,"bumpOrdersRevenue":838.65,"bumpItemValue":143.65},{"date":"2026-09-07","totalOrders":19,"bumpOrders":2,"bumpOrdersRevenue":1633.22,"bumpItemValue":287.3},{"date":"2026-09-08","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-09","totalOrders":15,"bumpOrders":1,"bumpOrdersRevenue":803.9,"bumpItemValue":143.65},{"date":"2026-09-10","totalOrders":22,"bumpOrders":3,"bumpOrdersRevenue":2734.54,"bumpItemValue":420.3},{"date":"2026-09-11","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-12","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-13","totalOrders":26,"bumpOrders":1,"bumpOrdersRevenue":812.35,"bumpItemValue":152.1},{"date":"2026-09-14","totalOrders":14,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-15","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-16","totalOrders":18,"bumpOrders":1,"bumpOrdersRevenue":804.75,"bumpItemValue":152.1},{"date":"2026-09-17","totalOrders":11,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-18","totalOrders":15,"bumpOrders":1,"bumpOrdersRevenue":1268.9,"bumpItemValue":152.1},{"date":"2026-09-19","totalOrders":21,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-20","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-21","totalOrders":8,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-22","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-23","totalOrders":12,"bumpOrders":1,"bumpOrdersRevenue":804.75,"bumpItemValue":152.1},{"date":"2026-09-24","totalOrders":9,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-25","totalOrders":12,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-26","totalOrders":14,"bumpOrders":1,"bumpOrdersRevenue":1434.07,"bumpItemValue":46.55},{"date":"2026-09-27","totalOrders":6,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-28","totalOrders":23,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-29","totalOrders":13,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-09-30","totalOrders":15,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-10-01","totalOrders":14,"bumpOrders":1,"bumpOrdersRevenue":615.6,"bumpItemValue":46.55},{"date":"2026-10-02","totalOrders":19,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-10-03","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-10-04","totalOrders":22,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-10-05","totalOrders":13,"bumpOrders":1,"bumpOrdersRevenue":847.1,"bumpItemValue":152.1},{"date":"2026-10-06","totalOrders":21,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-10-07","totalOrders":9,"bumpOrders":2,"bumpOrdersRevenue":2167.04,"bumpItemValue":198.65},{"date":"2026-10-08","totalOrders":10,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-10-09","totalOrders":17,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-10-10","totalOrders":10,"bumpOrders":1,"bumpOrdersRevenue":1032.56,"bumpItemValue":152.1},{"date":"2026-10-11","totalOrders":27,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-10-12","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-10-13","totalOrders":20,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0},{"date":"2026-10-14","totalOrders":16,"bumpOrders":0,"bumpOrdersRevenue":0.0,"bumpItemValue":0.0}];
@@ -2530,6 +2664,302 @@ document.querySelectorAll('.seg[data-chart="crmRevSessions"] button').forEach(b=
 });
 safeRun(renderCrmMonths, 'resumo mensal (CRM)');
 safeRun(renderCrm, 'CRM');
+
+/* ================= CRM > ACTIVE CAMPAIGN ================= */
+const acManualRaw = [[30,"Mavi - leve verdades por onde for","2025-03-19",4652,1962,499,31,24,10,32,0,0.0],[31,"A mochila que a mamãe fez pra mim","2025-03-26",4699,1997,529,25,10,8,28,0,0.0],[32,"Caos & amor","2025-04-02",4761,1986,467,27,1,10,38,0,0.0],[35,"Bela Tapeçaria","2025-04-11",4857,1998,429,35,1,10,39,0,0.0],[36,"Pesquisa de satisfação","2025-04-25",3030,1212,291,38,19,5,1,0,0.0],[37,"Dia das mães","2025-05-06",2342,992,472,38,4,0,70,1,156.67],[43,"Cupom de Dia das Mães","2025-05-09",4404,1918,556,46,10,0,71,3,1924.78],[44,"Bolsão ginger","2025-05-21",4526,1878,489,29,13,0,39,1,569.0],[45,"Mochila infantil -","2025-05-29",4405,1813,471,22,16,11,24,0,0.0],[46,"Duffle - jess","2025-06-05",4471,1857,500,27,13,11,36,2,1601.3],[47,"Duffle - jess (Copiar)","2025-06-12",4541,1838,481,33,14,8,59,2,910.64],[48,"Valentina - viagem","2025-07-02",4477,1869,503,33,18,12,49,0,0.0],[49,"Volta às aulas - julho","2025-07-09",4532,1843,465,29,14,14,42,0,0.0],[51,"Pré- Lançamento maçã","2025-07-10",4530,1876,592,185,9,9,200,2,956.99],[52,"Lançamento maçã","2025-07-16",4477,1843,517,111,12,7,27,0,0.0],[53,"Volta às aulas mochila clássica","2025-07-24",4556,1769,490,18,17,4,32,1,180.18],[54,"2 em 1 mochila maçã","2025-07-30",4590,1823,462,40,6,5,44,0,0.0],[55,"dia dos pais","2025-08-07",4676,1900,468,38,8,1,0,0,0.0],[56,"pré-lançamento babadores","2025-08-13",4748,1974,580,81,13,3,0,0,0.0],[57,"aviso de fraude e-mail loggi","2025-08-21",4860,2179,719,31,10,9,21,0,0.0],[58,"4 motivos para sair de yamys","2025-08-22",4848,1922,494,16,10,3,361,3,1280.59],[59,"lançamento de babadores","2025-08-25",4882,1700,381,168,9,6,0,0,0.0],[60,"lançamento de babadores (Copiar)","2025-08-28",4894,1871,491,33,10,3,96,3,1197.54],[61,"bonés","2025-09-04",4976,1950,473,36,13,5,2,0,0.0],[62,"cupom y50 - clientes recorrentes","2025-09-10",53,33,11,2,0,0,65,1,599.0],[63,"frete grátis de 12 à 15 de setembro","2025-09-12",4586,1895,552,26,12,7,55,1,390.0],[64,"pochetes por dentro","2025-09-19",4654,1922,531,48,9,7,102,0,0.0],[65,"y50 - lembrete","2025-09-22",54,31,11,1,0,0,0,0,0.0],[67,"Primavera kits","2025-09-26",4708,1837,477,49,11,6,97,1,675.31],[68,"presentes das crianças","2025-09-30",4743,1825,464,38,11,2,65,4,1755.06],[70,"ecobags e-mail","2025-10-09",3789,1952,531,38,10,2,19,0,0.0],[71,"kits de outubro - wpp","2025-10-15",3854,1898,502,53,13,3,70,1,430.2],[73,"últimos dias kit de outubro","2025-10-24",3934,1926,473,44,8,8,26,0,0.0],[74,"viagem de motorhome","2025-10-27",3968,1921,452,15,8,5,3,0,0.0],[76,"esquenta black friday - perfect","2025-11-05",4047,1950,499,55,13,3,99,1,867.0],[77,"Influenciadoras - mamas que inspiram","2025-11-07",4047,1953,513,36,5,2,20,2,1085.0],[78,"Perfect Friday - primeiro e-mail","2025-11-11",4094,1892,447,16,9,4,81,1,449.74],[79,"15% off no pix","2025-11-12",4104,1910,432,61,9,2,39,1,355.64],[80,"Brindes de mama para mama","2025-11-19",4240,1971,484,29,9,4,39,1,507.0],[81,"3 moods para curtir as férias","2025-11-21",4264,1949,391,10,7,4,101,2,892.53],[82,"últimos dias perfect friday","2025-11-25",4306,1935,464,45,14,2,67,2,1719.06],[83,"acessórios de edição limitada","2025-11-28",4352,1999,439,44,7,1,0,0,0.0],[84,"pré-lançamento gaivota","2025-11-30",4369,2046,473,25,10,2,0,0,0.0],[85,"pré-venda wpp gaivota","2025-12-02",4380,2147,674,190,14,2,210,5,4825.82],[86,"Venda antecipada no site | gaivota","2025-12-04",4401,2088,551,78,15,3,118,2,1116.14],[87,"Lançamento gaivota","2025-12-08",4447,2061,525,51,14,3,17,0,0.0],[88,"Programou a próxima viagem?","2025-12-15",4557,2027,425,12,12,1,18,1,340.0],[90,"Compre e retire","2025-12-17",4566,2022,483,15,12,3,0,0,0.0],[89,"Mãos livres para curtir com a sua criança","2025-12-20",4608,2052,436,23,10,4,27,0,0.0],[91,"Lista de desejos 2026","2025-12-27",4676,2140,497,16,27,3,59,2,1061.49],[92,"Volta às aulas: Da escola à pracinha acessórios versáteis","2026-01-03",4784,2225,508,39,12,4,107,4,2311.68],[93,"Volta às aulas: informações técnicas","2026-01-07",4877,2115,490,35,10,5,0,0,0.0],[94,"Essenciais Yamys","2026-01-10",4920,2166,476,30,8,3,16,0,0.0],[95,"Esse é o sinal para uma pausa","2026-01-14",4912,2182,484,14,6,1,57,1,605.15],[96,"Curtir o verão de yamys","2026-01-17",4270,2157,422,36,15,1,40,0,0.0],[97,"Um verão muito Yamys! 😎","2026-01-22",4386,2146,452,28,12,8,61,2,1043.99],[98,"Qual térmico combina com você?","2026-01-24",4421,2238,459,27,11,5,0,0,0.0],[100,"Aniversário - 4 anos","2026-01-28",4484,2278,508,39,17,1,23,0,0.0],[99,"Pré-venda aniversário","2026-01-28",4496,2230,585,153,14,5,63,1,1897.96],[101,"Yamys, sombra e água fresca","2026-01-31",4526,2242,452,18,17,6,57,1,595.88],[102,"Aniversário - Prorrogamos","2026-02-01",4538,2300,510,48,25,6,30,1,720.1],[103,"Carnaval","2026-02-06",4603,2240,476,24,17,3,62,2,793.26],[104,"Ecobag + copinho","2026-02-11",4672,2335,524,42,11,2,8,0,0.0],[105,"3 dates para usar o vale-night","2026-02-14",4713,2289,421,10,9,2,56,2,1820.88],[106,"kits disponíveis","2026-02-18",4776,2297,438,45,17,2,31,0,0.0],[107,"O acessório mais legal 🤸‍♀️(pochete)","2026-02-21",4827,2450,519,24,19,2,43,0,0.0],[108,"Babadores - últimas unidades","2026-02-25",4890,2350,456,19,22,3,53,0,0.0],[109,"Mochilas práticas","2026-02-28",4904,2355,430,27,19,5,50,3,2857.54],[110,"Escolha sua yamys","2026-03-04",4981,2343,421,32,13,4,69,0,0.0],[113,"dia da mulher","2026-03-08",4594,2343,401,7,9,5,36,2,562.86],[111,"pré-dia consumidor","2026-03-09",4613,2101,464,46,11,5,90,1,720.1],[112,"dia do consumidor","2026-03-10",4620,2315,484,64,10,5,0,0,0.0],[114,"dia do consumidor - produtos","2026-03-11",4650,2339,386,26,12,3,19,0,0.0],[115,"conteúdo oscar","2026-03-13",4663,2276,407,5,16,2,0,0,0.0],[116,"Pochetes - festival","2026-03-18",4772,2403,459,15,14,2,28,0,0.0],[117,"Outono","2026-03-23",4843,2407,479,28,13,4,113,0,0.0],[118,"kits de outono","2026-03-26",4892,2392,433,44,15,4,13,1,843.6],[119,"frete grátis acima de 699","2026-03-28",4905,2456,423,17,20,4,29,0,0.0],[120,"Dia da mentira - 5 verdades","2026-04-01",4951,2405,411,17,10,6,18,0,0.0],[121,"Páscoa","2026-04-05",4997,2499,439,19,48,3,0,0,0.0],[122,"Caça-Cupom","2026-04-15",4814,2445,461,86,10,4,170,7,4223.61],[126,"Receitas","2026-04-23",4963,2509,430,18,9,5,32,1,393.79],[128,"Escolha sua yamys","2026-04-24",2123,346,146,7,2,1,0,0,0.0],[129,"Tudo o que uma Mama precisa","2026-04-27",3760,2371,453,37,11,3,80,1,460.88],[131,"Essenciais Yamys","2026-04-30",5243,2522,411,30,16,44,28,1,968.0],[133,"Essenciais Yamys","2026-05-05",2895,584,185,28,1,6,46,1,691.49],[134,"Guia de Mochilas","2026-05-08",5356,2562,388,24,11,10,33,0,0.0],[136,"Viagens com Yamys","2026-05-12",5527,2657,470,9,13,16,17,0,0.0],[138,"É hora de dar tchau!","2026-05-14",5526,2604,483,68,7,13,125,2,786.69],[140,"Pochetes","2026-05-19",5614,2626,469,25,20,10,31,0,0.0],[142,"Lançamento Bonés+Ecobags","2026-05-21",5630,2746,526,50,21,5,70,5,809.94],[144,"Desconto na Paçoca e Tortuga","2026-05-27",5706,2523,378,50,22,6,75,1,934.8],[146,"Mala Duffle","2026-05-29",5724,2780,490,28,24,6,43,0,0.0],[148,"Frete grátis","2026-06-03",5795,2717,481,21,15,7,71,0,0.0],[150,"Ecobag Tomate","2026-06-07",5867,2887,561,13,15,6,13,0,0.0],[152,"Kit Sobrevivência da Copa","2026-06-10",5924,2772,446,27,12,11,36,0,0.0],[154,"Dia dos Namorados","2026-06-12",5958,2785,452,11,21,12,18,1,307.4],[156,"Presenteie uma Mama","2026-06-18",6052,2826,468,23,25,9,29,0,0.0],[160,"Inverno","2026-06-25",6115,2786,430,25,17,8,33,0,0.0],[162,"Porta-copos","2026-06-28",6136,2848,465,20,13,7,33,1,37.05],[164,"Necessaire","2026-06-30",6143,2804,454,13,19,6,16,0,0.0],[166,"Kits de inverno","2026-07-03",6169,2852,455,46,18,2,85,3,1703.1],[170,"Dia da Pizza","2026-07-10",6269,2828,479,16,17,8,6,0,0.0],[168,"Presenteáveis Yamys","2026-07-13",6314,2833,495,33,14,11,49,2,1440.52],[172,"Dia do Amigo","2026-07-15",6345,2793,424,16,11,11,26,1,966.2],[174,"Kits Volta às aulas","2026-07-17",6360,2852,412,31,7,5,61,2,406.25],[176,"Festivalzinho","2026-07-21",6398,2849,473,17,17,7,19,0,0.0],[178,"Volta às aulas","2026-07-23",6425,2809,418,25,13,6,41,0,0.0],[180,"Volta às aulas [última chamada]","2026-07-27",6491,2767,435,43,15,5,112,1,890.15],[182,"Lançamento Boliche","2026-07-29",6511,2979,626,152,11,5,207,2,2480.89],[184,"De volta para o estoque","2026-07-31",6547,2871,493,47,13,4,0,0,0.0],[185,"Enxoval Boliche","2026-08-05",6621,2931,532,48,20,4,102,1,990.42],[187,"Dia dos Pais","2026-08-07",6697,2930,423,24,18,4,47,0,0.0],[189,"Promo Mingau","2026-08-11",6795,2966,501,40,17,7,72,3,1422.84],[191,"Organizadores de Carrinho","2026-08-13",6823,2952,473,22,13,2,28,0,0.0],[193,"Voltou para o estoque","2026-08-14",6836,2975,481,36,24,3,50,0,0.0],[195,"3 essenciais da Mama","2026-08-18",6899,2919,441,18,12,8,55,1,130.16],[199,"Mochila Infantil 2 em 1","2026-08-20",6929,3000,469,23,17,9,27,1,335.8],[201,"Promo Mingau | Últimos dias","2026-08-25",6981,2986,498,28,25,8,43,1,653.6],[203,"Seu carrinho merece mais uma Yamys","2026-08-28",7003,2933,471,29,9,6,6,0,0.0],[205,"Faixas de valor de produto","2026-09-02",7068,2996,526,79,13,8,91,4,1557.01],[207,"Voltou para o estoque","2026-09-04",7097,3059,449,30,14,8,49,1,1063.8],[209,"Mochila Prática","2026-09-08",7155,2966,439,16,18,16,22,1,964.25],[211,"Relançamento Mingau","2026-09-10",7169,3107,596,70,20,12,76,0,0.0],[213,"Banner único - Mingau","2026-09-13",7227,3099,472,70,15,11,114,2,998.25],[215,"Semana do cliente - Início","2026-09-14",7214,2963,441,26,15,3,49,0,0.0],[217,"Frete Grátis - catálogo de produto","2026-09-17",7247,2957,396,22,13,3,48,0,0.0],[221,"Mala Duffle - mingau","2026-09-22",7314,3059,466,17,18,7,47,0,0.0],[223,"Mês do cliente","2026-09-26",7334,3080,425,13,10,6,17,0,0.0],[225,"Mês do cliente - R$50 off","2026-09-28",7355,3048,411,22,12,10,32,0,0.0],[227,"Dia das crianças","2026-10-01",7385,2914,356,12,11,9,24,2,789.23],[229,"Primavera","2026-10-05",7450,2922,403,10,15,11,16,0,0.0],[231,"Voltou para o Estoque","2026-10-07",7463,2972,439,39,18,5,54,1,738.15],[233,"Nido","2026-10-14",5814,2207,455,139,10,9,142,0,0.0]];
+const acAutoMonthlyRaw = [["2025-03",7,123,57,6,2,0,0,0,0.0],["2025-03",8,93,47,16,0,0,0,0,0.0],["2025-03",13,303,164,7,3,0,2,0,0.0],["2025-03",14,117,66,4,0,0,2,0,0.0],["2025-04",7,97,45,3,0,0,0,0,0.0],["2025-04",8,77,38,8,0,0,0,0,0.0],["2025-04",13,261,152,5,4,0,3,0,0.0],["2025-04",14,99,60,4,0,0,5,0,0.0],["2025-04",33,134,76,3,2,0,5,0,0.0],["2025-05",7,74,30,3,0,0,0,0,0.0],["2025-05",8,52,21,4,0,0,0,0,0.0],["2025-05",13,205,112,3,0,0,3,0,0.0],["2025-05",14,66,34,2,0,0,0,0,0.0],["2025-05",33,209,115,6,1,0,4,1,291.03],["2025-06",7,114,46,2,1,0,0,0,0.0],["2025-06",8,84,35,5,0,0,0,0,0.0],["2025-06",13,318,180,8,8,4,5,0,0.0],["2025-06",14,111,72,4,0,0,1,0,0.0],["2025-06",33,311,187,2,5,3,0,0,0.0],["2025-07",7,114,46,5,4,1,0,0,0.0],["2025-07",8,98,44,10,3,0,0,0,0.0],["2025-07",13,322,130,2,8,0,4,1,37.05],["2025-07",14,102,52,6,0,0,9,0,0.0],["2025-07",33,319,159,4,4,1,1,1,897.08],["2025-08",7,125,42,4,0,0,0,0,0.0],["2025-08",8,98,29,5,0,0,0,0,0.0],["2025-08",13,362,185,8,9,1,3,0,0.0],["2025-08",14,115,68,5,1,1,5,0,0.0],["2025-08",33,352,197,5,4,1,5,0,0.0],["2025-09",7,139,60,9,0,0,0,0,0.0],["2025-09",8,100,42,13,0,0,0,0,0.0],["2025-09",13,252,132,5,5,0,1,0,0.0],["2025-09",14,123,70,2,1,0,2,0,0.0],["2025-09",33,242,144,3,3,1,2,0,0.0],["2025-10",7,122,41,2,3,0,0,0,0.0],["2025-10",8,110,37,8,2,0,0,0,0.0],["2025-10",13,328,104,2,5,1,1,0,0.0],["2025-10",14,99,56,0,0,0,0,0,0.0],["2025-10",33,318,145,1,1,1,0,0,0.0],["2025-11",7,194,78,10,2,0,0,0,0.0],["2025-11",8,163,79,13,1,0,0,0,0.0],["2025-11",13,374,176,3,6,2,1,0,0.0],["2025-11",14,137,86,4,1,1,0,0,0.0],["2025-11",33,363,169,3,2,4,2,0,0.0],["2025-12",7,146,49,5,3,0,0,0,0.0],["2025-12",8,119,44,10,0,0,0,0,0.0],["2025-12",13,589,196,7,3,2,10,2,632.95],["2025-12",14,181,87,6,0,1,10,0,0.0],["2025-12",33,582,189,5,1,2,8,0,0.0],["2026-01",7,215,89,10,6,2,0,0,0.0],["2026-01",8,130,64,14,1,1,0,0,0.0],["2026-01",13,661,321,10,7,2,8,0,0.0],["2026-01",14,212,108,5,1,1,8,0,0.0],["2026-01",33,607,273,9,4,4,11,1,1572.16],["2026-02",7,181,78,5,2,0,0,0,0.0],["2026-02",8,146,58,17,1,0,0,0,0.0],["2026-02",13,443,236,4,12,8,5,0,0.0],["2026-02",14,182,112,7,0,1,4,0,0.0],["2026-02",33,422,242,4,2,2,2,0,0.0],["2026-03",7,300,93,6,2,0,0,0,0.0],["2026-03",8,242,65,14,0,0,0,0,0.0],["2026-03",13,558,285,6,9,7,5,0,0.0],["2026-03",14,209,123,10,1,2,9,0,0.0],["2026-03",33,538,291,11,3,6,15,1,1139.8],["2026-04",7,146,65,3,2,1,0,0,0.0],["2026-04",8,113,46,7,1,0,0,0,0.0],["2026-04",13,665,201,7,9,3,6,0,0.0],["2026-04",14,139,84,4,2,2,5,0,0.0],["2026-04",33,618,196,1,5,9,1,0,0.0],["2026-05",7,223,84,7,5,0,0,0,0.0],["2026-05",8,187,74,13,2,1,0,0,0.0],["2026-05",13,474,231,4,6,6,3,0,0.0],["2026-05",14,225,119,8,0,0,21,0,0.0],["2026-05",33,438,265,2,1,4,2,0,0.0],["2026-06",7,183,72,5,2,0,0,0,0.0],["2026-06",8,128,58,8,1,0,0,0,0.0],["2026-06",13,435,225,1,2,6,1,0,0.0],["2026-06",14,227,131,8,0,3,15,0,0.0],["2026-06",33,457,256,4,0,5,11,0,0.0],["2026-07",7,214,97,8,2,0,0,0,0.0],["2026-07",8,151,64,13,2,0,0,0,0.0],["2026-07",13,468,229,6,6,3,8,0,0.0],["2026-07",14,172,100,12,0,3,19,0,0.0],["2026-07",33,440,242,5,2,4,4,0,0.0],["2026-08",7,241,91,12,1,2,0,0,0.0],["2026-08",8,185,87,15,1,0,0,0,0.0],["2026-08",13,515,226,11,6,5,15,1,301.44],["2026-08",14,203,93,4,0,0,3,0,0.0],["2026-08",33,510,271,8,1,1,7,0,0.0],["2026-09",7,194,81,4,0,1,0,0,0.0],["2026-09",8,159,66,5,0,0,0,0,0.0],["2026-09",13,378,160,4,8,4,5,0,0.0],["2026-09",14,185,95,6,1,1,12,0,0.0],["2026-09",33,365,185,5,3,2,11,0,0.0],["2026-10",7,69,28,1,0,0,0,0,0.0],["2026-10",8,57,21,8,0,0,0,0,0.0],["2026-10",13,130,69,1,3,1,0,0,0.0],["2026-10",14,67,33,3,0,0,6,0,0.0],["2026-10",33,128,81,1,0,3,0,0,0.0]];
+const acBaseMonthlyRaw = [["2025-03",322,4699],["2025-04",348,3030],["2025-05",310,4405],["2025-06",349,4541],["2025-07",358,4590],["2025-08",404,4894],["2025-09",351,4743],["2025-10",360,3968],["2025-11",440,4369],["2025-12",458,4676],["2026-01",732,4526],["2026-02",525,4904],["2026-03",601,4905],["2026-04",598,5243],["2026-05",564,5724],["2026-06",527,6143],["2026-07",668,6547],["2026-08",858,7003],["2026-09",602,7355],["2026-10",290,5814]];
+const acBaseNow = {date:"2026-10-15", active:5358, unsubscribed:6790, bounced:204, unconfirmed:0};
+const AC_CONV_LAST = "2026-10-14";
+const acUnmatched = [24, 1, 357.99];
+
+const acAutoNames = {7:'Carrinho abandonado 1.0', 8:'Carrinho abandonado 2.0', 13:'Boas-vindas 1.0', 33:'Boas-vindas 2.0', 14:'Pós-compra — dicas de uso (Mochila Maternidade Prática)'};
+const acManual = acManualRaw.map(r=>({id:r[0], name:r[1], date:r[2], sent:r[3], opens:r[4], vopens:r[5], clicks:r[6], unsubs:r[7], bounces:r[8], sessions:r[9], orders:r[10], revenue:r[11]}));
+const acAuto = acAutoMonthlyRaw.map(r=>({ym:r[0], date:r[0]+'-01', id:r[1], sent:r[2], opens:r[3], clicks:r[4], bounces:r[5], unsubs:r[6], sessions:r[7], orders:r[8], revenue:r[9]}));
+const acBase = acBaseMonthlyRaw.map(r=>({ym:r[0], date:r[0]+'-01', created:r[1], reach:r[2]}));
+const AC_FIRST_DATE = acManual[0].date;
+const AC_LAST_DATE = acBaseNow.date;
+let chartAcBase=null, chartAcRates=null, chartAcRev=null;
+const acHiddenRev = {};
+const AC_REV_DEFS = [{key:'camp', label:'Campanhas'}, {key:'auto', label:'Fluxos automáticos'}];
+
+function acEsc(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function acDate(d){ return d.slice(8,10)+'/'+d.slice(5,7)+'/'+d.slice(2,4); }
+function acMonthLabel(ym){ const ab=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez']; return ab[parseInt(ym.slice(5,7),10)-1]+'/'+ym.slice(2,4); }
+function acRange(){ return {from:document.getElementById('acDateFrom').value, to:document.getElementById('acDateTo').value}; }
+function acSum(arr){
+  const t = {n:arr.length, sent:0, opens:0, vopens:0, clicks:0, unsubs:0, sessions:0, orders:0, revenue:0};
+  arr.forEach(r=>{ t.sent+=r.sent; t.opens+=r.opens; t.vopens+=(r.vopens||0); t.clicks+=r.clicks; t.unsubs+=r.unsubs; t.sessions+=r.sessions; t.orders+=r.orders; t.revenue+=r.revenue; });
+  return t;
+}
+const acRatio = (a,b)=> b ? a/b : 0;
+const acPerK = (rev,sent)=> sent ? rev/sent*1000 : 0;
+
+function switchCrmSub(name){
+  ['overview','ac'].forEach(n=>{
+    document.getElementById('crmpanel-'+n).classList.toggle('active', n===name);
+    document.getElementById('crmbtn-'+n).setAttribute('aria-selected', n===name);
+  });
+  if(name==='ac'){
+    safeRun(renderAc, 'ActiveCampaign');
+    safeRun(drawAcBase, 'gráfico da base (ActiveCampaign)');
+    safeRun(drawAcRev, 'gráfico de receita mensal (ActiveCampaign)');
+  }
+  syncDynamicSticky();
+}
+
+function renderAcBase(){
+  const n = acBaseNow;
+  const total = n.active + n.unsubscribed + n.bounced + n.unconfirmed;
+  const pct = v=> total ? Math.round(v/total*100)+'% dos contatos' : '';
+  const kpis = [
+    {label:'Contatos ativos', value:fmtNum(n.active), txt:pct(n.active)},
+    {label:'Descadastrados', value:fmtNum(n.unsubscribed), txt:pct(n.unsubscribed)},
+    {label:'Bounce (e-mail inválido)', value:fmtNum(n.bounced), txt:pct(n.bounced)},
+    {label:'Total já cadastrado', value:fmtNum(total), txt:'na Master Contact List'},
+  ];
+  document.getElementById('acBaseKpis').innerHTML = kpis.map(k=>`
+    <div class="kpi"><div class="label">${k.label}</div><div class="value">${k.value}</div><div class="delta flat">${k.txt}</div></div>`).join('');
+  document.getElementById('acBaseNote').textContent = 'Situação em '+acDate(n.date)+' (o ActiveCampaign só informa a situação atual; a evolução abaixo é montada a partir dos cadastros e dos disparos).';
+
+  // alcance: ultimo disparo x anterior
+  const last = acManual[acManual.length-1], prev = acManual[acManual.length-2];
+  const box = document.getElementById('acReachCallout');
+  if(last && prev && last.sent < prev.sent*0.9){
+    const d = (last.sent-prev.sent)/prev.sent*100;
+    box.style.display = 'flex';
+    box.innerHTML = `<div class="dot"></div><div><h3>O alcance caiu ${Math.abs(d).toFixed(0)}% de um disparo pro outro</h3><p>"${acEsc(last.name)}" (${acDate(last.date)}) chegou a ${fmtNum(last.sent)} contatos; "${acEsc(prev.name)}" (${acDate(prev.date)}) tinha chegado a ${fmtNum(prev.sent)}. Hoje há ${fmtNum(n.active)} contatos ativos. Confirme se foi limpeza proposital da base (descadastro de inativos) ou perda de contatos.</p></div>`;
+  } else { box.style.display = 'none'; box.innerHTML = ''; }
+}
+
+function drawAcBase(){
+  let lastReach = null;
+  const data = acBase.map(b=>{ if(b.reach!=null) lastReach = b.reach; return {date:b.date, created:b.created, reach:b.reach!=null?b.reach:lastReach}; });
+  if(chartAcBase) chartAcBase.destroy();
+  chartAcBase = drawDualChart('chart-ac-base', data, 'M', {
+    barKey:'created', lineKey:'reach', barLabel:'Novos contatos no mês', lineLabel:'Alcance do último disparo',
+    barFmt:v=>fmtNum(Math.round(v)), lineFmt:v=>fmtNum(Math.round(v)), invertLine:false
+  });
+}
+
+function acDelta(c, p, hasPrev){
+  if(!hasPrev || !p) return {cls:'flat', txt:'sem período anterior', arrow:''};
+  const d = ((c-p)/p)*100;
+  const cls = Math.abs(d)<1 ? 'flat' : (d>0?'up':'down');
+  const arrow = Math.abs(d)<1 ? '' : (d>0?'&#9650;':'&#9660;');
+  return {cls, txt:(d>=0?'+':'')+d.toLocaleString('pt-BR',{maximumFractionDigits:1})+'% vs. período anterior', arrow};
+}
+function acKpiHtml(list){
+  return list.map(k=>`
+    <div class="kpi"><div class="label">${k.label}</div><div class="value">${k.value}</div><div class="delta ${k.d.cls}">${k.d.arrow?k.d.arrow+' ':''}${k.d.txt}</div></div>`).join('');
+}
+
+function drawAcRates(cur){
+  if(chartAcRates) chartAcRates.destroy();
+  const labels = cur.map(r=>acDate(r.date));
+  chartAcRates = new Chart(document.getElementById('chart-ac-rates'), {
+    type:'line',
+    data:{labels, datasets:[
+      {label:'Abertura', data:cur.map(r=>acRatio(r.opens,r.sent)*100), borderColor:seriesColor(0), backgroundColor:seriesColor(0), yAxisID:'y', borderWidth:2, pointRadius:cur.length>40?0:2.5, tension:0.2},
+      {label:'Cliques', data:cur.map(r=>acRatio(r.clicks,r.sent)*100), borderColor:seriesColor(1), backgroundColor:seriesColor(1), yAxisID:'y1', borderWidth:2, pointRadius:cur.length>40?0:2.5, tension:0.2}
+    ]},
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{legend:{display:false}, tooltip:{callbacks:{
+        title:(items)=>{ const r = cur[items[0].dataIndex]; return acDate(r.date)+' — '+r.name; },
+        label:(c)=> c.dataset.label+': '+c.parsed.y.toLocaleString('pt-BR',{maximumFractionDigits:2})+'%'
+      }}},
+      scales:{
+        x:baseScalesX(),
+        y:{position:'left', grid:baseGridY(), ticks:{color:cssVar('--text-muted'), callback:v=>v+'%'}, title:{display:true, text:'Abertura', color:cssVar('--text-muted')}},
+        y1:{position:'right', grid:{drawOnChartArea:false}, ticks:{color:cssVar('--text-muted'), callback:v=>v+'%'}, title:{display:true, text:'Cliques', color:cssVar('--text-muted')}}
+      }
+    }
+  });
+}
+
+function renderAcCampaignTable(cur){
+  const rows = cur.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  const body = rows.map(r=>`<tr>
+    <td class="name">${acDate(r.date)}</td>
+    <td class="name">${acEsc(r.name)}</td>
+    <td class="num">${fmtNum(r.sent)}</td>
+    <td class="num">${fmtPct(acRatio(r.opens,r.sent))}</td>
+    <td class="num">${fmtPct(acRatio(r.vopens,r.sent))}</td>
+    <td class="num">${fmtPct(acRatio(r.clicks,r.sent))}</td>
+    <td class="num">${fmtPct(acRatio(r.clicks,r.opens))}</td>
+    <td class="num">${fmtNum(r.unsubs)}</td>
+    <td class="num">${fmtNum(r.sessions)}</td>
+    <td class="num">${fmtNum(r.orders)}</td>
+    <td class="num">${fmtBRL.format(r.revenue)}</td>
+    <td class="num">${fmtBRL.format(acPerK(r.revenue,r.sent))}</td>
+  </tr>`).join('');
+  const t = acSum(cur);
+  const foot = cur.length ? `<tr style="font-weight:600;">
+    <td class="name" colspan="2">Total / média do período (${t.n} disparos)</td>
+    <td class="num">${fmtNum(t.sent)}</td>
+    <td class="num">${fmtPct(acRatio(t.opens,t.sent))}</td>
+    <td class="num">${fmtPct(acRatio(t.vopens,t.sent))}</td>
+    <td class="num">${fmtPct(acRatio(t.clicks,t.sent))}</td>
+    <td class="num">${fmtPct(acRatio(t.clicks,t.opens))}</td>
+    <td class="num">${fmtNum(t.unsubs)}</td>
+    <td class="num">${fmtNum(t.sessions)}</td>
+    <td class="num">${fmtNum(t.orders)}</td>
+    <td class="num">${fmtBRL.format(t.revenue)}</td>
+    <td class="num">${fmtBRL.format(acPerK(t.revenue,t.sent))}</td>
+  </tr>` : `<tr><td colspan="12" class="name">Nenhum disparo no período.</td></tr>`;
+  document.getElementById('tblAcCampaigns').querySelector('tbody').innerHTML = body + foot;
+}
+
+function renderAcAutos(from, to){
+  const m0 = from.slice(0,7), m1 = to.slice(0,7);
+  const cur = acAuto.filter(r=>r.ym>=m0 && r.ym<=m1);
+  document.getElementById('acAutoNote').textContent = 'Meses inteiros de '+acMonthLabel(m0)+' a '+acMonthLabel(m1)+' (o ActiveCampaign só informa os fluxos por mês). Pedidos e receita: GA4, por último clique.';
+  const t = acSum(cur);
+  document.getElementById('acKpiAuto').innerHTML = acKpiHtml([
+    {label:'Envios dos fluxos', value:fmtNum(t.sent), d:{cls:'flat', txt:'e-mails disparados por gatilho', arrow:''}},
+    {label:'Abertura', value:fmtPct(acRatio(t.opens,t.sent)), d:{cls:'flat', txt:'inclui aberturas automáticas do Apple Mail', arrow:''}},
+    {label:'Cliques', value:fmtPct(acRatio(t.clicks,t.sent)), d:{cls:'flat', txt:fmtNum(t.clicks)+' contatos únicos', arrow:''}},
+    {label:'Pedidos', value:fmtNum(t.orders), d:{cls:'flat', txt:fmtNum(t.sessions)+' sessões', arrow:''}},
+    {label:'Receita', value:fmtBRL.format(t.revenue), d:{cls:'flat', txt:fmtBRL.format(acPerK(t.revenue,t.sent))+' por 1.000 envios', arrow:''}},
+  ]);
+  const byId = {};
+  cur.forEach(r=>{ (byId[r.id] = byId[r.id]||[]).push(r); });
+  const rows = Object.keys(byId).map(id=>({id, name:acAutoNames[id]||('Fluxo '+id), t:acSum(byId[id])})).sort((a,b)=>b.t.sent-a.t.sent);
+  const body = rows.map(r=>`<tr>
+    <td class="name">${acEsc(r.name)}</td>
+    <td class="num">${fmtNum(r.t.sent)}</td>
+    <td class="num">${fmtPct(acRatio(r.t.opens,r.t.sent))}</td>
+    <td class="num">${fmtPct(acRatio(r.t.clicks,r.t.sent))}</td>
+    <td class="num">${fmtPct(acRatio(r.t.clicks,r.t.opens))}</td>
+    <td class="num">${fmtNum(r.t.unsubs)}</td>
+    <td class="num">${fmtNum(r.t.sessions)}</td>
+    <td class="num">${fmtNum(r.t.orders)}</td>
+    <td class="num">${fmtBRL.format(r.t.revenue)}</td>
+    <td class="num">${fmtBRL.format(acPerK(r.t.revenue,r.t.sent))}</td>
+  </tr>`).join('');
+  const foot = rows.length ? `<tr style="font-weight:600;">
+    <td class="name">Total dos fluxos</td>
+    <td class="num">${fmtNum(t.sent)}</td>
+    <td class="num">${fmtPct(acRatio(t.opens,t.sent))}</td>
+    <td class="num">${fmtPct(acRatio(t.clicks,t.sent))}</td>
+    <td class="num">${fmtPct(acRatio(t.clicks,t.opens))}</td>
+    <td class="num">${fmtNum(t.unsubs)}</td>
+    <td class="num">${fmtNum(t.sessions)}</td>
+    <td class="num">${fmtNum(t.orders)}</td>
+    <td class="num">${fmtBRL.format(t.revenue)}</td>
+    <td class="num">${fmtBRL.format(acPerK(t.revenue,t.sent))}</td>
+  </tr>` : `<tr><td colspan="10" class="name">Sem dados de fluxos no período.</td></tr>`;
+  document.getElementById('tblAcAutos').querySelector('tbody').innerHTML = body + foot;
+}
+
+function acMonthly(){
+  const months = {};
+  const get = ym=> months[ym] || (months[ym] = {ym, camp:[], auto:[]});
+  acBase.forEach(b=>get(b.ym));
+  acManual.forEach(r=>get(r.date.slice(0,7)).camp.push(r));
+  acAuto.forEach(r=>get(r.ym).auto.push(r));
+  return Object.values(months).sort((a,b)=>a.ym.localeCompare(b.ym));
+}
+
+function drawAcRev(){
+  const ms = acMonthly().filter(m=>m.ym>='2025-04');
+  const rev = key=> ms.map(m=>acSum(m[key]).revenue);
+  if(chartAcRev) chartAcRev.destroy();
+  chartAcRev = new Chart(document.getElementById('chart-ac-rev'), {
+    type:'bar',
+    data:{
+      labels: ms.map(m=>acMonthLabel(m.ym)+(m.ym===AC_LAST_DATE.slice(0,7)?' (parcial)':'')),
+      datasets: AC_REV_DEFS.map((s,i)=>({label:s.label, data:rev(s.key), backgroundColor:seriesColor(i), stack:'rev', borderRadius:2, maxBarThickness:34, hidden:!!acHiddenRev[s.key]}))
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index', intersect:false},
+      plugins:{legend:{display:false}, tooltip:{callbacks:{
+        label:(c)=> c.dataset.label+': '+fmtBRL.format(c.parsed.y),
+        footer:(items)=>'Total: '+fmtBRL.format(items.reduce((a,it)=>a+it.parsed.y,0))
+      }}},
+      scales:{
+        x:Object.assign(baseScalesX(), {stacked:true}),
+        y:{stacked:true, grid:baseGridY(), ticks:{color:cssVar('--text-muted'), callback:v=>fmtBRL.format(v)}}
+      }
+    }
+  });
+}
+
+function renderAcMonths(){
+  let reach = null;
+  const ms = acMonthly();
+  const created = {}; acBase.forEach(b=>{ created[b.ym] = b; });
+  const enriched = ms.map(m=>{ const b = created[m.ym]; if(b && b.reach!=null) reach = b.reach; return Object.assign({reach}, m); }).reverse();
+  document.getElementById('tblAcMonths').querySelector('tbody').innerHTML = enriched.filter(m=>m.ym>='2025-03').map(m=>{
+    const c = acSum(m.camp), a = acSum(m.auto);
+    const label = acMonthLabel(m.ym)+(m.ym===AC_LAST_DATE.slice(0,7)?' (parcial)':'');
+    return `<tr>
+      <td class="name">${label}</td>
+      <td class="num">${m.reach!=null?fmtNum(m.reach):'—'}</td>
+      <td class="num">${created[m.ym]?fmtNum(created[m.ym].created):'—'}</td>
+      <td class="num">${fmtNum(c.n)}</td>
+      <td class="num">${fmtNum(c.sent)}</td>
+      <td class="num">${c.sent?fmtPct(acRatio(c.opens,c.sent)):'—'}</td>
+      <td class="num">${c.sent?fmtPct(acRatio(c.clicks,c.sent)):'—'}</td>
+      <td class="num">${fmtNum(c.orders)}</td>
+      <td class="num">${fmtBRL.format(c.revenue)}</td>
+      <td class="num">${fmtNum(a.sent)}</td>
+      <td class="num">${a.sent?fmtPct(acRatio(a.opens,a.sent)):'—'}</td>
+      <td class="num">${a.sent?fmtPct(acRatio(a.clicks,a.sent)):'—'}</td>
+      <td class="num">${fmtNum(a.orders)}</td>
+      <td class="num">${fmtBRL.format(a.revenue)}</td>
+      <td class="num">${fmtNum(c.unsubs+a.unsubs)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderAc(){
+  const {from, to} = acRange();
+  if(!from || !to) return;
+  const cur = acManual.filter(r=>r.date>=from && r.date<=to);
+  const spanDays = (parseD(to)-parseD(from))/86400000+1;
+  const prevTo = addDays(from, -1), prevFrom = addDays(from, -spanDays);
+  const prev = acManual.filter(r=>r.date>=prevFrom && r.date<=prevTo);
+  const hasPrev = prevFrom >= AC_FIRST_DATE;
+  const c = acSum(cur), p = acSum(prev);
+  const R = (t,k)=>acRatio(t[k], t.sent);
+  document.getElementById('acKpiCamp').innerHTML = acKpiHtml([
+    {label:'Disparos', value:fmtNum(c.n), d:acDelta(c.n,p.n,hasPrev)},
+    {label:'Enviados', value:fmtNum(c.sent), d:acDelta(c.sent,p.sent,hasPrev)},
+    {label:'Abertura', value:fmtPct(R(c,'opens')), d:acDelta(R(c,'opens'),R(p,'opens'),hasPrev)},
+    {label:'Abertura verificada', value:fmtPct(R(c,'vopens')), d:acDelta(R(c,'vopens'),R(p,'vopens'),hasPrev)},
+    {label:'Cliques (% dos enviados)', value:fmtPct(R(c,'clicks')), d:acDelta(R(c,'clicks'),R(p,'clicks'),hasPrev)},
+    {label:'Descadastros', value:fmtPct(R(c,'unsubs')), d:acDelta(R(c,'unsubs'),R(p,'unsubs'),hasPrev)},
+    {label:'Pedidos', value:fmtNum(c.orders), d:acDelta(c.orders,p.orders,hasPrev)},
+    {label:'Receita', value:fmtBRL.format(c.revenue), d:acDelta(c.revenue,p.revenue,hasPrev)},
+    {label:'Receita por 1.000 envios', value:fmtBRL.format(acPerK(c.revenue,c.sent)), d:acDelta(acPerK(c.revenue,c.sent),acPerK(p.revenue,p.sent),hasPrev)},
+  ]);
+  renderAcCampaignTable(cur);
+  renderAcAutos(from, to);
+  safeRun(()=>drawAcRates(cur.slice().sort((a,b)=>a.date.localeCompare(b.date))), 'gráfico de taxas (ActiveCampaign)');
+}
+
+{
+  document.getElementById('acAttrNote').innerHTML = 'Pedidos e receita: GA4, sessões com origem ActiveCampaign (último clique), ligadas à campanha pelo nome da campanha no link (utm_campaign) e pela data de envio, até '+acDate(AC_CONV_LAST)+'. Compras feitas dias depois por outro caminho (ex.: acesso direto) não entram, e a data de envio aparece no fuso de Brasília. '+fmtNum(acUnmatched[0])+' sessões, '+fmtNum(acUnmatched[1])+' pedido e '+fmtBRLc.format(acUnmatched[2])+' não puderam ser ligados a uma campanha e ficam fora das tabelas.';
+  const af = document.getElementById('acDateFrom'), at = document.getElementById('acDateTo');
+  af.min = AC_FIRST_DATE; af.max = AC_LAST_DATE; at.min = AC_FIRST_DATE; at.max = AC_LAST_DATE;
+  at.value = AC_LAST_DATE;
+  const d90 = addDays(AC_LAST_DATE, -89);
+  af.value = d90 < AC_FIRST_DATE ? AC_FIRST_DATE : d90;
+}
+initDateRangePicker('ac-daterange-btn', 'acDateFrom', 'acDateTo');
+document.getElementById('acDateFrom').addEventListener('change', renderAc);
+document.getElementById('acDateTo').addEventListener('change', renderAc);
+buildToggleLegend('acLegendRev', AC_REV_DEFS, acHiddenRev, ()=>chartAcRev);
+safeRun(renderAcBase, 'base (ActiveCampaign)');
+safeRun(drawAcBase, 'gráfico da base (ActiveCampaign)');
+safeRun(drawAcRev, 'gráfico de receita mensal (ActiveCampaign)');
+safeRun(renderAcMonths, 'resumo mensal (ActiveCampaign)');
+safeRun(renderAc, 'ActiveCampaign');
+{ const fd = document.getElementById('crmFooterDate'); if(fd) fd.textContent = CRM_LAST_DATE.slice(8,10)+'/'+CRM_LAST_DATE.slice(5,7)+'/'+CRM_LAST_DATE.slice(0,4); }
 
 </script>
 </body>
