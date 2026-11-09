@@ -45,7 +45,7 @@ A tecnologia knit 3D permite tecer forma, textura e estrutura em uma única peç
 
 ## Perguntas frequentes
 
-### A partir de qual idade e peso posso usar o Nido?
+## A partir de qual idade e peso posso usar o Nido?
 
 O Nido pode ser usado desde recém-nascido, a partir de 4 kg, até 15 kg. Mais do que a idade, é importante considerar o peso e o desenvolvimento do bebê.
 
@@ -53,7 +53,7 @@ Para quem ainda não sustenta a cabecinha, é importante ficar atento ao apoio d
 
 Se quiser, conta pra gente a idade e o peso do seu bebê para ajudarmos você!
 
-### O bebê pode ficar olhando para frente?
+## O bebê pode ficar olhando para frente?
 
 Sim! O Nido permite carregar o bebê voltado para você e também para o mundo.
 
@@ -63,25 +63,25 @@ Para os bebês que ainda não têm esse controle, o uso é voltado para você, c
 
 Nosso time pode ajudar a entender qual posição corresponde à fase do seu bebê!
 
-### O tecido não esquenta? É confortável nos dias quentes?
+## O tecido não esquenta? É confortável nos dias quentes?
 
 O Nido é leve e feito em knit 3D, com tramas que favorecem a circulação de ar. Os modelos Seiva e Gênese ainda possuem faixas centrais com uma trama mais aberta.
 
 Como em qualquer colo, o contato entre os corpos também aquece. Nos dias quentes, roupas leves e atenção ao conforto de vocês ajudam a tornar o uso mais agradável.
 
-### O Nido é anatômico para o quadril do bebê?
+## O Nido é anatômico para o quadril do bebê?
 
 Sim. O Nido foi desenvolvido para respeitar a posição ergonômica do quadril do bebê, com as perninhas formando um "M", em que os joelhinhos ficam mais altos que o bumbum.
 
 A base possui uma regulagem que permite ajustar a abertura das perninhas ao tamanho do bebê, oferecendo sustentação de um joelho ao outro, sem limitar os movimentos.
 
-### O Nido é confortável para quem carrega?
+## O Nido é confortável para quem carrega?
 
 O Nido foi pensado para oferecer conforto também para quem carrega! Ele possui uma faixa de cintura estruturada e acolchoada, alças em knit 3D e regulagens para adaptar o sling a diferentes corpos e ao tamanho do bebê.
 
 O ajuste correto faz total diferença na experiência de uso: se não está confortável, não está correto. Caso ainda tenha dúvidas ao vestir, nosso time está disponível para ajudar você a entender o posicionamento do seu Nido e sugerir algum ajuste, caso necessário.
 
-### É possível amamentar usando o Nido?
+## É possível amamentar usando o Nido?
 
 Sim, a amamentação é possível, porém exige atenção contínua e cuidados de segurança.
 
@@ -91,7 +91,7 @@ Não é uma prática de "mãos livres". O apoio constante é especialmente impor
 
 Após a mamada, o bebê deve voltar à posição vertical, com o carregador reajustado e ainda contando com o apoio dos seus braços para não pressionar o estômago do bebê no seu corpo. Observe sempre se o queixo do bebê está afastado do peito e tenha atenção ao posicionamento e à respiração continuamente.
 
-### Meu bebê não aceitou o Nido ou ficou chorando. É normal?
+## Meu bebê não aceitou o Nido ou ficou chorando. É normal?
 
 Alguns bebês se acomodam logo nos primeiros usos; outros precisam de um tempinho para conhecer essa nova forma de colo, já que a sensação é diferente de estar diretamente nos seus braços.
 
@@ -99,7 +99,7 @@ Para começar, escolha um momento em que o bebê esteja tranquilo, alimentado e 
 
 O ajuste também faz diferença no conforto, e nosso atendimento está disponível para acompanhar vocês nos primeiros usos. Se houver choro persistente ou incômodo, retire o bebê e tente novamente em outro momento.
 
-### Como saber se o Nido está ajustado corretamente?
+## Como saber se o Nido está ajustado corretamente?
 
 O bebê deve ficar firme e próximo ao corpo de quem carrega, sem que seja necessário apertar excessivamente as alças.
 
@@ -111,13 +111,13 @@ Na posição voltada para você, o bebê deve ficar apoiado e próximo ao seu co
 
 Você pode contar com nosso time para ajudar nessa etapa!
 
-### A gola oferece sustentação para bebês que ainda não seguram a cabeça?
+## A gola oferece sustentação para bebês que ainda não seguram a cabeça?
 
 Sim. A gola do Nido foi desenvolvida para oferecer apoio à cabeça e ao pescoço, com regulagens para acompanhar diferentes fases do bebê.
 
 Para os menorzinhos, é essencial ajustar a gola conforme as orientações do manual, garantindo que a cabeça e o pescoço fiquem apoiados, sem cobrir o rosto nem comprometer as vias aéreas.
 
-### É difícil vestir e ajustar o Nido sozinho?
+## É difícil vestir e ajustar o Nido sozinho?
 
 O Nido foi desenvolvido para oferecer autonomia, com três fechos que encaixam por aproximação e regulagens para adaptar o sling a você e ao bebê. ❤️
 
@@ -125,19 +125,19 @@ Nos primeiros usos, é natural precisar de um pouco de prática. Temos um vídeo
 
 E nosso atendimento também está por aqui para esclarecer suas dúvidas!
 
-### De que material o Nido é feito?
+## De que material o Nido é feito?
 
 O Nido é feito em knit 3D. Knit é uma tecnologia de malharia que permite criar diferentes tramas e estruturas em uma mesma peça.
 
 No Nido, essas estruturas combinam sustentação e flexibilidade para acomodar o bebê, com leveza e passagem de ar. É essa construção que permite que ele se adapte ao corpo sem abrir mão da sustentação.
 
-### Como lavar e cuidar do Nido?
+## Como lavar e cuidar do Nido?
 
 O Nido pode ser lavado à máquina, no ciclo delicado e em temperatura máxima de 30 °C. ❤️ Para proteger a peça, feche os engates e use um saco para roupas delicadas, sabão líquido neutro e centrifugação baixa ou curta.
 
 A secagem é natural, à sombra e em local ventilado. Não use secadora, ferro, alvejante ou amaciante, nem torça a peça. Evite também lavar com roupas que tenham velcros ou zíperes, que podem danificar o knit.
 
-### Posso contar com a ajuda de vocês para entender, adaptar e ajustar meu Nido?
+## Posso contar com a ajuda de vocês para entender, adaptar e ajustar meu Nido?
 
 Claro! ❤️ Você pode contar com a gente antes de escolher e também depois que o seu Nido chegar.
 
